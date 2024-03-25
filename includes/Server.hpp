@@ -5,19 +5,21 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Client.hpp" // Assurez-vous que ce fichier existe et est correctement structuré.
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <iostream>
+#include "Client.hpp"
 
 class Server {
 public:
-    // Constructeur explicite
+    // Le constructeur est explicite c'est surtout une question de sécurité pour eviter les conversions implicites non désirées
     explicit Server(int port, const std::string& password);
     
-    // Destructeur
     ~Server();
 
-
-
-    // Méthode pour démarrer le serveur et entrer dans la boucle principale d'écoute
     void run();
 
 private:
@@ -32,7 +34,11 @@ private:
     Server& operator=(const Server&);   // Opérateur d'assignation
 
     // Initialiser le socket serveur
-    // void setupServerSocket();
+    void setupServerSocket();
+    void createSocket();
+    void configureSocket();
+    void bindSocket();
+    void listenSocket();
 
     // Accepter une nouvelle connexion
     // void acceptNewConnection();

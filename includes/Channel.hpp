@@ -3,11 +3,11 @@
 
 #include <string>
 #include <set>
-#include "Client.hpp" // Assurez-vous d'avoir une classe Client correspondante.
+#include "Client.hpp" 
 
 class Channel {
 public:
-    // Constructeur
+
     Channel(const std::string& name, const std::string& topic = "");
 
     // Ajoute un client au canal

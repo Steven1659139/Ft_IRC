@@ -4,38 +4,24 @@
 #include <string>
 #include <vector>
 
-class Channel; // Déclaration anticipée pour éviter une inclusion cyclique.
+class Channel;
 
 class Client {
 public:
-    // Constructeur
-    Client(int socket, const std::string& nickname, const std::string& username);
+    // Constructeur explicite
+    explicit Client(int socket, const std::string& nickname, const std::string& username);
 
-    // Destructeur
     ~Client();
 
-    // Obtenir l'identifiant du socket client
+
+    // Méthodes pour la gestion des clients et des canaux (décommentez ou implémentez selon les besoins)
     // int getSocket() const;
-
-    // Obtenir le pseudo du client
     // std::string getNickname() const;
-
-    // Définir le pseudo du client
     // void setNickname(const std::string& nickname);
-
-    // Obtenir le nom d'utilisateur du client
     // std::string getUsername() const;
-
-    // Envoyer un message au client
     // void sendMessage(const std::string& message) const;
-
-    // Ajouter un client à un canal
     // void joinChannel(Channel* channel);
-
-    // Retirer un client d'un canal
     // void leaveChannel(const std::string& channelName);
-
-    // Obtenir la liste des canaux auxquels le client est connecté
     // std::vector<Channel*> getChannels() const;
 
 private:
@@ -43,6 +29,9 @@ private:
     std::string nickname; // Pseudo du client
     std::string username; // Nom d'utilisateur du client
     std::vector<Channel*> channels; // Canaux auxquels le client est connecté
+
+    Client(const Client& other);
+    Client& operator=(const Client& other);
 };
 
 #endif // CLIENT_HPP
