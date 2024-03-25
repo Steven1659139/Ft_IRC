@@ -26,7 +26,7 @@ private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
     int serverSocket;                   // Descripteur de fichier pour le socket serveur
-    // std::map<int, Client> clients;      // Cartographie des clients connectés, avec le descripteur de fichier comme clé
+    std::map<int, Client*> clients;     // map de pointeur sur client avec leur fd comme clé
 
 
     // On veux pas que ça puisse être copier, c'est le serveur c'est pour ça que c'est dans private et que ce seras pas implémenter
@@ -41,7 +41,7 @@ private:
     void listenSocket();
 
     // Accepter une nouvelle connexion
-    // void acceptNewConnection();
+    void acceptNewConnection();
 
     // Traiter les données reçues d'un client
     // void handleClientData(int clientSocket);

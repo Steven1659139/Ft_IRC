@@ -1,15 +1,18 @@
 #include "../includes/Server.hpp"
 
-Server::Server(int port, const std::string& password) : port(port), password(password){
-    setupServerSocket();
-}
+Server::Server(int port, const std::string& password) : port(port), password(password){}
 
 Server::~Server() {
+    for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        delete it->second; // Libère la mémoire de l'objet Client
+    }
+    clients.clear(); // Nettoie la carte
+
     if (serverSocket != -1) {
-        close(serverSocket);
-        serverSocket = -1;
+        close(serverSocket); // Assurez-vous de fermer le socket serveur également
     }
 }
+
 
 
 /*
@@ -73,7 +76,7 @@ void Server::bindSocket() {
 */
 void Server::listenSocket() {
 
-    if (listen(serverSocket, 5) < 0)// Le nombre 5 représente la file d'attente maximale pour les connexions en attente
+    if (listen(serverSocket, 5) < 0)
     {
         std::cerr << "Erreur lors de la mise en écoute du socket" << std::endl;
         exit(EXIT_FAILURE);
@@ -88,3 +91,30 @@ void Server::setupServerSocket()
     bindSocket();
     listenSocket();
 };
+
+void Server::acceptNewConnection() {
+    struct sockaddr_in clientAddr;
+    socklen_t clientAddrLen = sizeof(clientAddr);
+
+    int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
+    if (clientSocket < 0) {
+        std::cerr << "Erreur lors de l'acceptation d'une nouvelle connexion." << std::endl;
+        return;
+    }
+
+    // Créer un nouvel objet Client et l'ajouter à la map
+    Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername");
+    clients[clientSocket] = newClient;
+
+    std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
+}
+
+void Server::run() {
+    setupServerSocket();
+
+    std::cout << "Serveur en écoute sur le port " << port << std::endl;
+
+    while (true) {
+        acceptNewConnection();
+    }
+}

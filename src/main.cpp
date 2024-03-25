@@ -13,8 +13,6 @@ int valid_arg(char **argv)
     return (port);
 }
 
-
-
 int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
@@ -27,6 +25,7 @@ int main(int argc, char* argv[]) {
         std::string password = argv[2];
         std::cout << "Démarrage du serveur sur le port " << port << " avec le mot de passe " << password << std::endl;
         Server irc_serv(port, password);
+        irc_serv.run();
     }
 
     return 0;
