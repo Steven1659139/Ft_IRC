@@ -1,5 +1,17 @@
 #include "../includes/Server.hpp"
 
+Server::Server(int port, const std::string& password) : port(port), password(password){
+    setupServerSocket();
+}
+
+Server::~Server() {
+    if (serverSocket != -1) {
+        close(serverSocket);
+        serverSocket = -1;
+    }
+}
+
+
 /*
     Créé le socket du serveur,
 
@@ -39,10 +51,11 @@ void Server::configureSocket() {
 
     int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
+    Fun fact: htons() = Host TO Network Short
 
 */
 void Server::bindSocket() {
-    struct sockaddr_in serverAddr{};
+    struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET; // IPv4
     serverAddr.sin_addr.s_addr = INADDR_ANY; // Écoute sur toutes les interfaces réseau
     serverAddr.sin_port = htons(port); // Convertit le numéro de port en format réseau (big-endian)
@@ -52,12 +65,26 @@ void Server::bindSocket() {
     }
 }
 
+/*
+    Marque le socket serveur comme une socket passif prêt à recevoir des connexions 
+
+    int listen(int sockfd, int backlog);
+
+*/
+void Server::listenSocket() {
+
+    if (listen(serverSocket, 5) < 0)// Le nombre 5 représente la file d'attente maximale pour les connexions en attente
+    {
+        std::cerr << "Erreur lors de la mise en écoute du socket" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    std::cout << "Serveur prêt et en écoute sur le port " << port << std::endl;
+}
+
 void Server::setupServerSocket()
 {
     createSocket();
     configureSocket();
-
-
-
-
+    bindSocket();
+    listenSocket();
 };

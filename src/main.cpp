@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     {
         std::string password = argv[2];
         std::cout << "Démarrage du serveur sur le port " << port << " avec le mot de passe " << password << std::endl;
+        Server irc_serv(port, password);
     }
 
     return 0;
