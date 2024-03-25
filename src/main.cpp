@@ -1,33 +1,29 @@
 #include <iostream>
 #include <string>
-#include "../includes/Server.hpp" // Assurez-vous que ce fichier existe dans votre dossier include/
+#include "../includes/Server.hpp"
+#include <cstdlib>
 
-int main(int argc, char** argv) {
-    // Vérifier le nombre d'arguments
+int valid_arg(char **argv)
+{
+    int port = std::atoi(argv[1]);
+    if (port <= 0 || port > 65535) {
+        std::cerr << "Erreur: Le port doit être un nombre entre 1 et 65535." << std::endl;
+        return -1;
+    }
+    return (port);
+}
+
+int main(int argc, char* argv[]) {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <port> <password>" << std::endl;
         return 1;
     }
+    int port = valid_arg(argv);
 
-    // Conversion du port en int
-    int port = std::atoi(argv[1]);
-    if (port <= 0) {
-        std::cerr << "Erreur : Le port doit être un nombre positif." << std::endl;
-        return 1;
-    }
-
-    // Récupération du mot de passe
-    std::string password(argv[2]);
-
-    try {
-        // Initialisation du serveur avec le port et le mot de passe
-        Server ircServer(port, password);
-
-        // Démarrage du serveur
-        ircServer.run();
-    } catch (const std::exception& e) {
-        std::cerr << "Erreur lors de l'initialisation du serveur : " << e.what() << std::endl;
-        return 1;
+    if (port > 0)
+    {
+        std::string password = argv[2];
+        std::cout << "Démarrage du serveur sur le port " << port << " avec le mot de passe " << password << std::endl;
     }
 
     return 0;

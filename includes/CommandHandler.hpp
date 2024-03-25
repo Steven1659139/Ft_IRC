@@ -1,45 +1,33 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+// #ifndef COMMANDHANDLER_HPP
+// #define COMMANDHANDLER_HPP
 
-#include <string>
-#include <vector>
+// #include "Client.hpp" // Assurez-vous que ce fichier existe et est correctement structuré.
+// #include "Server.hpp" // Assurez-vous que ce fichier existe et est correctement structuré.
+// #include <string>
+// #include <vector>
 
-class Client {
-public:
-    // Constructeur
-    Client(int socketFd, const std::string& nickname, const std::string& username, const std::string& realName, const std::string& host);
+// class CommandHandler {
+// public:
+//     // Associer le CommandHandler à une instance de serveur
+//     CommandHandler(Server& server);
 
-    // Destructeur
-    ~Client();
+//     // Traiter une commande reçue d'un client
+//     void handleCommand(Client& client, const std::string& commandLine);
 
-    // Getter pour le descripteur de fichier du socket client
-    int getSocketFd() const;
+// private:
+//     Server& server; // Référence au serveur pour accéder aux clients et aux canaux
 
-    // Setters et getters pour les informations du client
-    void setNickname(const std::string& nickname);
-    std::string getNickname() const;
+//     // Méthodes spécifiques à chaque commande
+//     void handleNickCommand(Client& client, const std::vector<std::string>& args);
+//     void handleUserCommand(Client& client, const std::vector<std::string>& args);
+//     void handleJoinCommand(Client& client, const std::vector<std::string>& args);
+//     void handlePartCommand(Client& client, const std::vector<std::string>& args);
+//     void handlePrivMsgCommand(Client& client, const std::vector<std::string>& args);
+//     void handleQuitCommand(Client& client, const std::vector<std::string>& args);
+//     // Ajoutez d'autres commandes selon les besoins...
 
-    void setUsername(const std::string& username);
-    std::string getUsername() const;
+//     // Utilitaire pour diviser la ligne de commande en mots
+//     std::vector<std::string> splitCommandLine(const std::string& commandLine);
+// };
 
-    void setRealName(const std::string& realName);
-    std::string getRealName() const;
-
-    void setHost(const std::string& host);
-    std::string getHost() const;
-
-    // Méthode pour envoyer un message au client
-    void sendMessage(const std::string& message) const;
-
-    // Méthode pour recevoir un message du client
-    std::string receiveMessage() const;
-
-private:
-    int socketFd;              // Descripteur de fichier pour le socket du client
-    std::string nickname;      // Surnom du client utilisé dans les canaux
-    std::string username;      // Nom d'utilisateur pour l'authentification
-    std::string realName;      // Nom réel du client, pour des informations supplémentaires
-    std::string host;          // Hôte/IP du client
-};
-
-#endif // CLIENT_HPP
+// #endif // COMMANDHANDLER_HPP

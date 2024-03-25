@@ -15,28 +15,28 @@ public:
     ~Client();
 
     // Obtenir l'identifiant du socket client
-    int getSocket() const;
+    // int getSocket() const;
 
     // Obtenir le pseudo du client
-    std::string getNickname() const;
+    // std::string getNickname() const;
 
     // Définir le pseudo du client
-    void setNickname(const std::string& nickname);
+    // void setNickname(const std::string& nickname);
 
     // Obtenir le nom d'utilisateur du client
-    std::string getUsername() const;
+    // std::string getUsername() const;
 
     // Envoyer un message au client
-    void sendMessage(const std::string& message) const;
+    // void sendMessage(const std::string& message) const;
 
     // Ajouter un client à un canal
-    void joinChannel(Channel* channel);
+    // void joinChannel(Channel* channel);
 
     // Retirer un client d'un canal
-    void leaveChannel(const std::string& channelName);
+    // void leaveChannel(const std::string& channelName);
 
     // Obtenir la liste des canaux auxquels le client est connecté
-    std::vector<Channel*> getChannels() const;
+    // std::vector<Channel*> getChannels() const;
 
 private:
     int socket; // Descripteur de fichier pour la connexion du client
