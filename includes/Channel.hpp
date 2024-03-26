@@ -1,9 +1,10 @@
 #ifndef CHANNEL_HPP
-#define CHANNEL_HPP
+# define CHANNEL_HPP
 
-#include <string>
-#include <set>
-#include "Client.hpp" 
+# include <string>
+# include <set>
+# include <algorithm>
+# include "Client.hpp" 
 
 class Channel {
 public:
@@ -20,19 +21,22 @@ public:
     // void broadcastMessage(const std::string& message, const Client* sender = nullptr);
 
     // Définit ou obtient le sujet du canal
-    // void setTopic(const std::string& topic);
+    void setTopic(const std::string& topic);
     // std::string getTopic() const;
 
     // Vérifie si un client est déjà dans le canal
     // bool isClientInChannel(const Client* client) const;
 
     // Récupère le nom du canal
-    // std::string getName() const;
+    std::string getName() const;
 
 private:
-    std::string name; // Nom du canal
+    std::string const name; // Nom du canal
     std::string topic; // Sujet du canal
     std::set<Client*> clients; // Ensemble des clients dans ce canal
+    Channel();
+    Channel(const Channel &cp);
+    Channel &operator=(const Channel &ref);
 
     // Permissions et autres configurations du canal pourraient être ajoutées ici
 };

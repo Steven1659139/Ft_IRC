@@ -1,17 +1,19 @@
 
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
-#include <string>
-#include <vector>
-#include <map>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <iostream>
-#include "Client.hpp"
+# include <string>
+# include <vector>
+# include <map>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <unistd.h>
+# include <fcntl.h>
+# include <iostream>
+# include "Client.hpp"
+# include <utility>
+# include <algorithm>
 
 class Server {
 public:
@@ -28,10 +30,10 @@ private:
     int serverSocket;                   // Descripteur de fichier pour le socket serveur
     std::map<int, Client*> clients;     // map de pointeur sur client avec leur fd comme clé
 
-
     // On veux pas que ça puisse être copier, c'est le serveur c'est pour ça que c'est dans private et que ce seras pas implémenter
     Server(const Server&);              // Constructeur de copie
     Server& operator=(const Server&);   // Opérateur d'assignation
+    Server();                           // Constructeur par défaut
 
     // Initialiser le socket serveur
     void setupServerSocket();
