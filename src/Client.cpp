@@ -12,6 +12,11 @@ std::string Client::getUsername() const
     return(username);
 }
 
+std::string Client::getNickname() const
+{
+    return(nickname);
+}
+
 void Client::setNickname(const std::string &nickname)
 {
     this->nickname = nickname;
