@@ -9,7 +9,7 @@
 class Channel {
 public:
 
-    Channel(const std::string& name, const std::string& topic = "");
+    Channel(const std::string& name, const std::string& topic);
 
     // Ajoute un client au canal
     
@@ -17,6 +17,10 @@ public:
 
     // Supprime un client du canal
     bool removeClient(Client* client);
+
+    // Ajoute et Enlève les droits d'opérateur
+    bool addOperator(Client* client);
+    bool removeOperator(Client* client);
 
     // Envoie un message à tous les clients du canal
     // void broadcastMessage(const std::string& message, const Client* sender = nullptr);
@@ -27,6 +31,8 @@ public:
 
     // Vérifie si un client est déjà dans le canal
     bool isClientInChannel(const Client* client) const;
+
+    bool isClientAnOperator(const Client* client) const;
 
     // Récupère le nom du canal
     std::string getName() const;
