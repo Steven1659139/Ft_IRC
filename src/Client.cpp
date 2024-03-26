@@ -20,26 +20,18 @@ void Client::setNickname(const std::string &nickname)
 
 void Client::joinChannel(Channel* ch)
 {
-    try
-    {
-        channels.at(ch->getName());
-        std::cerr << "You have already joined " << ch->getName() << "!" << std::endl;
-    }
-    catch(std::exception &e)
-    {
+    size_t i = channels.count(ch->getName());
+    if (i == 0)
         channels.insert(std::make_pair(ch->getName(), ch));
-    }
+    else
+        std::cerr << "You have already joined a channel named " << ch->getName() << "!" << std::endl;
 }
 
 void Client::leaveChannel(const std::string &channelName)
 {
-    try
-    {
-        channels.at(channelName);
+    size_t i = channels.count(channelName);
+    if (i == 1)
         channels.erase(channelName);
-    }
-    catch(std::exception &e)
-    {
-        std::cerr << "You have not joined any channels named " << channelName << "!" << std::endl;
-    }
+    else
+        std::cerr << "You have not joined any channel named " << channelName << "!" << std::endl;
 }

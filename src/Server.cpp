@@ -93,7 +93,6 @@ void Server::setupServerSocket()
 };
 
 void Server::acceptNewConnection() {
-    std::pair<int, Client*> nc; //nc = newclient;
     struct sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
 
@@ -105,8 +104,7 @@ void Server::acceptNewConnection() {
 
     // Créer un nouvel objet Client et l'ajouter à la map
     Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername");
-    nc = std::make_pair(clientSocket, newClient);
-    clients.insert(nc); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
+    clients.insert(std::make_pair(clientSocket, newClient)); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
 
     std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
 }
