@@ -32,6 +32,7 @@ public:
     // Vérifie si un client est déjà dans le canal
     bool isClientInChannel(const Client* client) const;
 
+    // Vérifie si un client est déjà un opérateur
     bool isClientAnOperator(const Client* client) const;
 
     // Récupère le nom du canal
