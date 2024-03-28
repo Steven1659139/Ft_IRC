@@ -1,7 +1,7 @@
 #include "../includes/Channel.hpp"
 
 
- Channel::Channel(const std::string& name, const std::string& topic) : name(name), topic(topic){}
+Channel::Channel(const std::string& name, const std::string& topic) : name(name), topic(topic){}
 
 std::string	Channel::getName() const
 {
@@ -80,4 +80,9 @@ void Channel::setTopic(const std::string &topic)
 std::string Channel::getTopic() const
 {
 	return (topic);
+}
+
+std::set<Client*> Channel::getClients() const
+{
+	return (clients);
 }

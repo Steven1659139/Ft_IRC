@@ -8,8 +8,10 @@
 # include <algorithm>
 # include <exception>
 # include <utility>
+# include <sys/socket.h>
 
 class Channel;
+class Server;
 
 class Client {
 public:
@@ -20,13 +22,14 @@ public:
 
 
     // Méthodes pour la gestion des clients et des canaux (décommentez ou implémentez selon les besoins)
-    // int getSocket() const;
+    int getSocket() const;
     std::string getNickname() const;
     void setNickname(const std::string& nickname);
     std::string getUsername() const;
     // void sendMessage(const std::string& message) const;
     void joinChannel(Channel* ch);
     void leaveChannel(const std::string& channelName);
+    void recieveMessage(int chansocket, std::string const &msg); // début de la logique pour les messages?
     // std::vector<Channel*> getChannels() const;
 
 private:

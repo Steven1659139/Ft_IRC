@@ -7,6 +7,11 @@ Client::~Client() {
     close(socket);
 }
 
+int Client::getSocket() const
+{
+    return (socket);
+}
+
 std::string Client::getUsername() const
 {
     return(username);

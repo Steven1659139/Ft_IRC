@@ -38,6 +38,9 @@ public:
     // Récupère le nom du canal
     std::string getName() const;
 
+    // Récupère les clients du canal
+    std::set<Client*> getClients() const;
+
 private:
     std::string const name; // Nom du canal
     std::string topic; // Sujet du canal
