@@ -46,16 +46,19 @@ private:
     void acceptNewConnection();
 
     // Traiter les données reçues d'un client
-    // void handleClientData(int clientSocket);
+    bool handleClientData(int clientSocket);
 
     // Envoyer un message à tous les clients connectés (sauf l'expéditeur)
     // void broadcastMessage(const std::string& message, int senderFd);
 
     // Fermer proprement une connexion client
-    // void closeClientConnection(int clientSocket);
+    void closeClientConnection(int clientSocket);
 
     // Vérifier si le mot de passe fourni est correct
     // bool authenticateClient(const std::string& receivedPassword);
+
+    void processClientActivity(fd_set& readfds);
+    void initializeFDSet(fd_set& readfds, int& max_sd);
 };
 
 #endif // SERVER_HPP

@@ -4,16 +4,14 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
 
 Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
-        delete it->second; // Libère la mémoire de l'objet Client
+        delete it->second;
     }
-    clients.clear(); // Nettoie la carte
+    clients.clear();
 
     if (serverSocket != -1) {
-        close(serverSocket); // Assurez-vous de fermer le socket serveur également
+        close(serverSocket);
     }
 }
-
-
 
 /*
     Créé le socket du serveur,
@@ -109,12 +107,86 @@ void Server::acceptNewConnection() {
     std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
 }
 
-void Server::run() {
-    setupServerSocket();
+void Server::closeClientConnection(int clientSocket) {
+    
+    std::map<int, Client*>::iterator it = clients.find(clientSocket);
+    
+    if (it != clients.end()) {
+        close(it->first);
+        delete it->second;
+        clients.erase(it);
+        std::cout << "Connexion avec le client sur la socket " << clientSocket << " fermée." << std::endl;
+    } else {
+        std::cerr << "Tentative de fermer une connexion inexistante: socket " << clientSocket << std::endl;
+    }
+}
 
+bool Server::handleClientData(int clientSocket) {
+    char buffer[1024];
+    memset(buffer, 0, sizeof(buffer));
+
+    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    if (bytesRead < 0) {
+        std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
+        return false;
+    } else if (bytesRead == 0) {
+        std::cout << "Client déconnecté." << std::endl;
+        closeClientConnection(clientSocket);
+        return false;
+    } else {
+        std::cout << "Message reçu: " << buffer << std::endl;
+        return true;
+    }
+}
+
+void Server::run() {
+    fd_set readfds;
+    int max_sd;
+
+    setupServerSocket();
     std::cout << "Serveur en écoute sur le port " << port << std::endl;
 
     while (true) {
-        acceptNewConnection();
+        initializeFDSet(readfds, max_sd);
+
+        if (select(max_sd + 1, &readfds, NULL, NULL, NULL) < 0 && errno != EINTR) {
+            std::cerr << "Erreur de select." << std::endl;
+            continue;
+        }
+
+        if (FD_ISSET(serverSocket, &readfds)) {
+            acceptNewConnection();
+        }
+        processClientActivity(readfds);
+    }
+}
+
+
+
+void Server::initializeFDSet(fd_set& readfds, int& max_sd) {
+    FD_ZERO(&readfds);
+    FD_SET(serverSocket, &readfds);
+    max_sd = serverSocket;
+
+    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        int sd = it->first;
+        if (sd > 0) FD_SET(sd, &readfds);
+        if (sd > max_sd) max_sd = sd;
+    }
+}
+
+void Server::processClientActivity(fd_set& readfds) {
+    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end();) {
+        int sd = it->first;
+        if (FD_ISSET(sd, &readfds)) {
+            if (!handleClientData(sd)) {
+                closeClientConnection(sd);
+                clients.erase(it++);
+            } else {
+                ++it;
+            }
+        } else {
+            ++it;
+        }
     }
 }

@@ -26,7 +26,7 @@ public:
     std::string getNickname() const;
     void setNickname(const std::string& nickname);
     std::string getUsername() const;
-    // void sendMessage(const std::string& message) const;
+    bool sendMessage(const std::string& message) const;
     void joinChannel(Channel* ch);
     void leaveChannel(const std::string& channelName);
     void recieveMessage(int chansocket, std::string const &msg); // début de la logique pour les messages?
