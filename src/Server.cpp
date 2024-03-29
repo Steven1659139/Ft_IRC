@@ -101,7 +101,6 @@ void Server::acceptNewConnection() {
         std::cerr << "Erreur lors de l'acceptation d'une nouvelle connexion." << std::endl;
         return;
     }
-
     // Créer un nouvel objet Client et l'ajouter à la map
     Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername");
     clients.insert(std::make_pair(clientSocket, newClient)); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
