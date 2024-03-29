@@ -107,18 +107,16 @@ void Server::acceptNewConnection() {
 }
 
 void Server::closeClientConnection(int clientSocket) {
-    
     std::map<int, Client*>::iterator it = clients.find(clientSocket);
-    
     if (it != clients.end()) {
-        close(it->first);
-        delete it->second;
-        clients.erase(it);
+        close(it->first); // Ferme le socket.
+        delete it->second; // Libère l'objet Client.
+        clients.erase(it); // Supprime le client de la map.
         std::cout << "Connexion avec le client sur la socket " << clientSocket << " fermée." << std::endl;
-    } else {
-        std::cerr << "Tentative de fermer une connexion inexistante: socket " << clientSocket << std::endl;
     }
+    // Pas besoin d'afficher d'erreur ici car cette fonction est conçue pour être idempotente.
 }
+
 
 bool Server::handleClientData(int clientSocket) {
     char buffer[1024];
@@ -127,17 +125,26 @@ bool Server::handleClientData(int clientSocket) {
     ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
-        return false;
+        return false; // Indique une erreur, sans fermer ici.
     } else if (bytesRead == 0) {
         std::cout << "Client déconnecté." << std::endl;
-        closeClientConnection(clientSocket);
-        return false;
+        return false; // Indique que le client est déconnecté, sans fermer ici.
     } else {
         std::cout << "Message reçu: " << buffer << std::endl;
-        return true;
+        return true; // Données reçues et traitées correctement.
     }
 }
 
+/**
+ * Boucle principale du serveur. 
+ * - Configure le socket d'écoute.
+ * - Entre dans une boucle infinie qui:
+ *   - Initialise les FD sets pour surveiller le socket d'écoute et les sockets clients.
+ *   - Attend une activité sur l'un de ces sockets via select(). 
+ *     - En cas d'erreur avec select(), affiche un message d'erreur et continue la boucle.
+ *     - Si une activité est détectée sur le socket d'écoute, accepte une nouvelle connexion.
+ *   - Traite l'activité sur les sockets clients (lire les données entrantes, fermer les connexions, etc.).
+ */
 void Server::run() {
     fd_set readfds;
     int max_sd;
@@ -159,33 +166,42 @@ void Server::run() {
         processClientActivity(readfds);
     }
 }
-
-
-
+/**
+ * Prépare l'ensemble des descripteurs de fichier et le descripteur maximum pour `select()`.
+ * - Réinitialise l'ensemble des descripteurs de fichier (`readfds`) pour la lecture.
+ * - Ajoute le socket serveur à l'ensemble pour détecter les nouvelles connexions.
+ * - Parcourt tous les clients connectés, les ajoute à l'ensemble pour surveiller leur activité,
+ *   et met à jour `max_sd` avec le plus grand descripteur de fichier.
+ */
 void Server::initializeFDSet(fd_set& readfds, int& max_sd) {
     FD_ZERO(&readfds);
     FD_SET(serverSocket, &readfds);
     max_sd = serverSocket;
-
     for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
         int sd = it->first;
         if (sd > 0) FD_SET(sd, &readfds);
+
         if (sd > max_sd) max_sd = sd;
     }
 }
 
+/**
+ * Traite les activités des clients: lit les données si disponibles, ferme les connexions si nécessaire.
+ * - Vérifie chaque client pour des données entrantes.
+ * - Utilise `handleClientData` pour lire/traiter les données.
+ * - Ferme et supprime le client si `handleClientData` indique une déconnexion.
+ */
 void Server::processClientActivity(fd_set& readfds) {
     for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end();) {
-        int sd = it->first;
-        if (FD_ISSET(sd, &readfds)) {
-            if (!handleClientData(sd)) {
-                closeClientConnection(sd);
-                clients.erase(it++);
-            } else {
-                ++it;
-            }
-        } else {
-            ++it;
+        int sd = it->first; 
+        std::map<int, Client*>::iterator next_it = ++it; // Pré-incrémente pour la sécurité de l'itération.
+
+        if (FD_ISSET(sd, &readfds) && !handleClientData(sd)) {
+            closeClientConnection(sd); // Ferme la connexion ici si nécessaire.
         }
+
+        it = next_it; // Continue avec l'itérateur mis à jour.
     }
 }
+
+

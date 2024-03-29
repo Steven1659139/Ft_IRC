@@ -29,6 +29,7 @@ private:
     std::string password;               // Mot de passe requis pour la connexion
     int serverSocket;                   // Descripteur de fichier pour le socket serveur
     std::map<int, Client*> clients;     // map de pointeur sur client avec leur fd comme clé
+    int max_sd;
 
     // On veux pas que ça puisse être copier, c'est le serveur c'est pour ça que c'est dans private et que ce seras pas implémenter
     Server(const Server&);              // Constructeur de copie
@@ -59,6 +60,7 @@ private:
 
     void processClientActivity(fd_set& readfds);
     void initializeFDSet(fd_set& readfds, int& max_sd);
+    void updateMaxSD(); 
 };
 
 #endif // SERVER_HPP

@@ -3,7 +3,7 @@ NAME = ircserv
 
 # Compilateur et flags
 CC = g++
-CFLAGS = -Wall -Wextra -Werror -Iinclude
+CFLAGS = -Wall -Wextra -Werror -Iinclude -g
 
 # Dossiers
 SRCDIR = src
