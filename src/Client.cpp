@@ -50,13 +50,12 @@ bool Client::sendMessage(const std::string& message) const {
     // Ajout de "\r\n" à la fin du message pour respecter le protocole IRC
     std::string formattedMessage = message + "\r\n";
 
-    // Envoie le message sur le socket
     ssize_t bytesSent = send(socket, formattedMessage.c_str(), formattedMessage.length(), 0);
 
     if (bytesSent < 0) {
         std::cerr << "Erreur lors de l'envoi du message." << std::endl;
-        return false; // Échec de l'envoi
+        return false; 
     }
 
-    return true; // Message envoyé avec succès
+    return true; 
 }
