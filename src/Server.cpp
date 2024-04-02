@@ -1,6 +1,6 @@
 #include "../includes/Server.hpp"
 
-Server::Server(int port, const std::string& password) : port(port), password(password){}
+Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0;}
 
 Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
@@ -121,7 +121,7 @@ void Server::closeClientConnection(int clientSocket) {
 bool Server::handleClientData(int clientSocket) {
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
-
+    
     ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
@@ -155,7 +155,7 @@ void Server::run() {
     while (true) {
         initializeFDSet(readfds, max_sd);
 
-        if (select(max_sd + 1, &readfds, NULL, NULL, NULL) < 0 && errno != EINTR) {
+        if (select(max_sd + 1, &readfds, NULL, NULL, &timeout) < 0 && errno != EINTR) {
             std::cerr << "Erreur de select." << std::endl;
             continue;
         }
