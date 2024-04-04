@@ -62,7 +62,10 @@ private:
 
     void processClientActivity(fd_set& readfds);
     void initializeFDSet(fd_set& readfds, int& max_sd);
-    void updateMaxSD(); 
+    void updateMaxSD();
+    
+    //Vérifier si le message reçut contient une commande, et si oui, exécuter cette commande
+    void checkForCommand(std::string message); 
 };
 
 #endif // SERVER_HPP

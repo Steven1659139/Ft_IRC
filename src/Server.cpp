@@ -119,10 +119,12 @@ void Server::closeClientConnection(int clientSocket) {
 
 
 bool Server::handleClientData(int clientSocket) {
-    char buffer[1024];
-    memset(buffer, 0, sizeof(buffer));
-    
-    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    //char buffer[1024];
+    //memset(buffer, 0, sizeof(buffer));
+    char buffer;
+    std::string message;
+
+    ssize_t bytesRead = recv(clientSocket, &buffer, 1, 0);
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
         return false; // Indique une erreur, sans fermer ici.
@@ -130,10 +132,32 @@ bool Server::handleClientData(int clientSocket) {
         std::cout << "Client déconnecté." << std::endl;
         return false; // Indique que le client est déconnecté, sans fermer ici.
     } else {
-        std::cout << "Message reçu: " << buffer << std::endl;
+        message.append(&buffer);
+        while (bytesRead > 0)
+        {
+            bytesRead = recv(clientSocket, &buffer, 1, MSG_DONTWAIT);
+            message.append(&buffer);
+        }
+        std::cout << "Message reçu: " << message << std::endl;
+        send(clientSocket, &message, message.length(), MSG_DONTWAIT);
         return true; // Données reçues et traitées correctement.
     }
 }
+
+/*void    checkForCommand(std::string message)
+{
+    std::string commands[] = {"QUIT", "MSG","PRIVMSG", "JOIN", "KICK", "INVITE", "TOPIC", "MODE"};
+    size_t i = 0;
+    while (message[i] != ' ')
+        i++;
+    std::string temp = message.substr(i);
+    i = 0;
+    while (i < 8 && message.compare(commands[i]))
+        i++;
+    if (i == 8)
+        return ;
+    
+}*/
 
 /**
  * Boucle principale du serveur. 
