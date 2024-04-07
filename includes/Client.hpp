@@ -16,10 +16,13 @@ class Server;
 class Client {
 public:
     // Constructeur explicite
-    explicit Client(int socket, const std::string& nickname, const std::string& username);
+    explicit Client(int socket, const std::string& nickname, const std::string& username, bool auth);
 
     ~Client();
 
+
+    void setAuth(bool value);
+    bool isAuth() const;
 
     // Méthodes pour la gestion des clients et des canaux (décommentez ou implémentez selon les besoins)
     int getSocket() const;
@@ -37,6 +40,7 @@ private:
     std::string nickname; // Pseudo du client
     std::string username; // Nom d'utilisateur du client
     std::map<std::string ,Channel*> channels; // Canaux auxquels le client est connecté <- Je le change pour une map pour pouvoir limiter le nombre d'opération
+    bool auth;
 
     Client(const Client& other);
     Client& operator=(const Client& other);

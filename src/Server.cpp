@@ -1,6 +1,8 @@
 #include "../includes/Server.hpp"
 
 Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0;}
+// Server::Server(int port, const std::string& password) : port(port), password(password), commandHandler(*this){timeout.tv_sec = 5; timeout.tv_usec = 0;}
+
 
 Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
@@ -44,6 +46,17 @@ void Server::configureSocket() {
     int yes = 1;
     if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
         std::cerr << "Erreur de configuration du socket (SO_REUSEADDR)" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    // Met le socket en mode non bloquant
+    int flags = fcntl(serverSocket, F_GETFL, 0);
+    if (flags == -1) {
+        std::cerr << "Erreur lors de la récupération des flags du socket" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    flags |= O_NONBLOCK;
+    if (fcntl(serverSocket, F_SETFL, flags) == -1) {
+        std::cerr << "Erreur lors de la mise du socket en mode non bloquant" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -100,7 +113,7 @@ void Server::acceptNewConnection() {
         return;
     }
     // Créer un nouvel objet Client et l'ajouter à la map
-    Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername");
+    Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername", false);
     clients.insert(std::make_pair(clientSocket, newClient)); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
 
     std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
@@ -109,12 +122,12 @@ void Server::acceptNewConnection() {
 void Server::closeClientConnection(int clientSocket) {
     std::map<int, Client*>::iterator it = clients.find(clientSocket);
     if (it != clients.end()) {
-        close(it->first); // Ferme le socket.
-        delete it->second; // Libère l'objet Client.
-        clients.erase(it); // Supprime le client de la map.
+        close(it->first);
+        delete it->second; 
+        clients.erase(it); 
         std::cout << "Connexion avec le client sur la socket " << clientSocket << " fermée." << std::endl;
     }
-    // Pas besoin d'afficher d'erreur ici car cette fonction est conçue pour être idempotente.
+    // Pas besoin d'afficher d'erreur ici la fonction est conçue pour être idempotente.
 }
 
 
@@ -123,13 +136,16 @@ bool Server::handleClientData(int clientSocket) {
     memset(buffer, 0, sizeof(buffer));
     
     ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
         return false; // Indique une erreur, sans fermer ici.
     } else if (bytesRead == 0) {
         std::cout << "Client déconnecté." << std::endl;
         return false; // Indique que le client est déconnecté, sans fermer ici.
-    } else {
+    }else
+    {
+        //ici je voudrais que que le commandHandler exécute les commande dans le buffer
         std::cout << "Message reçu: " << buffer << std::endl;
         return true; // Données reçues et traitées correctement.
     }
@@ -194,14 +210,19 @@ void Server::initializeFDSet(fd_set& readfds, int& max_sd) {
 void Server::processClientActivity(fd_set& readfds) {
     for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end();) {
         int sd = it->first; 
-        std::map<int, Client*>::iterator next_it = ++it; // Pré-incrémente pour la sécurité de l'itération.
+        std::map<int, Client*>::iterator next_it = ++it;
 
         if (FD_ISSET(sd, &readfds) && !handleClientData(sd)) {
-            closeClientConnection(sd); // Ferme la connexion ici si nécessaire.
+            closeClientConnection(sd); 
         }
-
-        it = next_it; // Continue avec l'itérateur mis à jour.
+        it = next_it; 
     }
 }
 
-
+bool Server::authenticateClient(const std::string& receivedPassword)
+{
+    if (receivedPassword == password)
+        return true;
+    else
+        return false;
+}

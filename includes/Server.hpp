@@ -13,8 +13,12 @@
 # include <fcntl.h>
 # include <iostream>
 # include "Client.hpp"
+# include "CommandHandler.hpp"
 # include <utility>
 # include <algorithm>
+
+
+// class CommandHandler;
 
 class Server {
 public:
@@ -58,11 +62,13 @@ private:
     void closeClientConnection(int clientSocket);
 
     // Vérifier si le mot de passe fourni est correct
-    // bool authenticateClient(const std::string& receivedPassword);
+    bool authenticateClient(const std::string& receivedPassword);
 
     void processClientActivity(fd_set& readfds);
     void initializeFDSet(fd_set& readfds, int& max_sd);
-    void updateMaxSD(); 
+    void updateMaxSD();
+
+
 };
 
 #endif // SERVER_HPP
