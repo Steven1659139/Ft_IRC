@@ -132,10 +132,12 @@ void Server::closeClientConnection(int clientSocket) {
 
 
 bool Server::handleClientData(int clientSocket) {
-    char buffer[1024];
-    memset(buffer, 0, sizeof(buffer));
-    
-    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    //char buffer[1024];
+    //memset(buffer, 0, sizeof(buffer));
+    char buffer;
+    std::string msg;
+
+    ssize_t bytesRead = recv(clientSocket, &buffer, 1, MSG_DONTWAIT);
     
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
@@ -145,8 +147,16 @@ bool Server::handleClientData(int clientSocket) {
         return false; // Indique que le client est déconnecté, sans fermer ici.
     }else
     {
+        msg += buffer;        
+        while (bytesRead > 0)
+        {
+            bytesRead = recv(clientSocket, &buffer, 1, MSG_DONTWAIT);
+            msg += buffer;
+        }
         //ici je voudrais que que le commandHandler exécute les commande dans le buffer
-        std::cout << "Message reçu: " << buffer << std::endl;
+        std::cout << "Message reçu: " << msg << std::endl;
+        msg.clear();
+        //send(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
         return true; // Données reçues et traitées correctement.
     }
 }

@@ -42,7 +42,7 @@ fclean: clean
 	@echo "${GREEN}Nettoyage complet effectué.${NC}"
 
 
-IP = 10.11.3.5
+IP = 127.0.0.1
 
 ddos-xav: #fork limit 881
 	@for i in {1..10} ; do \

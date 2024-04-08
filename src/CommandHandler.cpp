@@ -30,6 +30,10 @@ void CommandHandler::pass(Client& client, const std::vector<std::string>& args) 
     }
 }
 
+void CommandHandler::privMsg(Client & client, const std::vector<std::string>& args)
+{
+    
+}
 
 
 // Traiter une commande reçue d'un client
