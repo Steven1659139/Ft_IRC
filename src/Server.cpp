@@ -135,7 +135,7 @@ bool Server::handleClientData(int clientSocket) {
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
     
-    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
+    ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
     
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
