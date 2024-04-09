@@ -47,7 +47,7 @@ IP = 127.0.0.1
 ddos-xav: #fork limit 881
 	@for i in {1..10} ; do \
 		echo "Connecting User$$i" ; \
-		(printf "PASS 1234\r\nUSER User$$i\r\nNICK User$$i\r\nJOIN #chan\r\nPRIVMSG Xav :allo\r\n"; sleep 5) | nc $(IP) 4242 & \
+		(printf "PRIVMSG defaultNickname allo"; sleep 5) | nc $(IP) 4242 & \
     done; wait
 	
 # Règle pour recompiler

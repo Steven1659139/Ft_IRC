@@ -1,6 +1,7 @@
 #include "../includes/CommandHandler.hpp"
 #include <sstream>
 #include <iterator>
+#include "../includes/Utils.hpp"
 
 CommandHandler::CommandHandler(Server& server) : server(server) {}
 
@@ -32,7 +33,19 @@ void CommandHandler::pass(Client& client, const std::vector<std::string>& args) 
 
 void CommandHandler::privMsg(Client & client, const std::vector<std::string>& args)
 {
-    
+    //std::string appender = "\r\n";
+    size_t i = 0;
+    if (server.isClientHere(args[0]) == true)
+    {
+        
+        std::map<int, Client *>::iterator it = server.findClient(args[0]);
+        std::string temp = ":" + client.getNickname() + "!localhost PRIVMSG " + it->second->getNickname() + " :";
+        while (++i < args.size() - 1)
+            temp += args[i] + " ";
+        temp.append(args[i]);
+        //temp.append(appender);
+        Utils::ft_send(it->second->getSocket(), temp);
+    }
 }
 
 
@@ -55,7 +68,7 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     } else if (command == "PART") {
         // handlePartCommand(client, args);
     } else if (command == "PRIVMSG") {
-        // handlePrivMsgCommand(client, args);
+       privMsg(client, args);
     } else if (command == "QUIT") {
         // handleQuitCommand(client, args);
     } else if (command == "PASS") {

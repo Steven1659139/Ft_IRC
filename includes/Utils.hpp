@@ -1,13 +1,17 @@
-// #ifndef UTILS_HPP
-// #define UTILS_HPP
+#ifndef UTILS_HPP
+# define UTILS_HPP
 
-// #include <string>
-// #include <vector>
+# include <string>
+# include <vector>
+# include <algorithm>
+# include "Server.hpp"
 
-// namespace Utils {
+ namespace Utils {
 
 //     // Divise une chaîne de caractères en un vecteur de chaînes basé sur un délimiteur
 //     std::vector<std::string> split(const std::string& s, char delimiter);
+
+int ft_send(int fd, const std::string buffer);
 
 //     // Supprime les espaces de début et de fin d'une chaîne de caractères
 //     std::string trim(const std::string& s);
@@ -27,6 +31,6 @@
 //     // Décode une chaîne de caractères reçue du réseau ou d'une source externe
 //     std::string decode(const std::string& s);
 
-// }
+ }
 
-// #endif // UTILS_HPP
+#endif // UTILS_HPP

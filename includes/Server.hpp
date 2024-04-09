@@ -18,8 +18,6 @@
 # include <algorithm>
 
 
-// class CommandHandler;
-
 class Server {
 public:
     // Le constructeur est explicite c'est surtout une question de sécurité pour eviter les conversions implicites non désirées
@@ -28,7 +26,8 @@ public:
     ~Server();
 
     void run();
-
+    bool isClientHere(std::string name);
+    std::map<int, Client *>::iterator findClient(std::string name);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
