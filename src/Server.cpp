@@ -1,4 +1,5 @@
 #include "../includes/Server.hpp"
+#include "../includes/Utils.hpp"
 
 Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0;}
 // Server::Server(int port, const std::string& password) : port(port), password(password), commandHandler(*this){timeout.tv_sec = 5; timeout.tv_usec = 0;}
@@ -8,8 +9,11 @@ Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
         delete it->second;
     }
+    for(std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        delete it->second;
+    }
     clients.clear();
-
+    channels.clear();
     if (serverSocket != -1) {
         close(serverSocket);
     }
@@ -251,4 +255,40 @@ bool Server::isClientHere(std::string name)
         it++;
     }
     return (false);
+}
+
+void Server::createChannel(const std::string& name, const std::string& topic)
+{
+    if (channels.count(name) == 0)
+    {
+        Channel *newchan = new Channel(name, topic);
+        channels.insert(std::make_pair(name, newchan));
+    }
+}
+
+std::map<std::string, Channel *>::iterator Server::getChannel(const std::string& name)
+{
+    std::map<std::string, Channel *>::iterator it = channels.begin();
+    if (channels.count(name) == 0)
+        return (it = channels.end());
+    while(it->first.compare(name))
+        it.operator++();
+    return (it);    
+}
+
+std::map<std::string, Channel *>::iterator Server::getChannelEnd()
+{
+    std::map<std::string, Channel *>::iterator it = channels.end();
+    return (it);
+}
+
+void Server::sendMessageOnChan(std::string message, std::map<std::string, Channel *>::iterator chan)
+{
+    std::map<int, Client *>::iterator it = clients.begin();
+    while (it != clients.end())
+    {
+        if (chan->second->isClientInChannel(it->second))
+            Utils::ft_send(it->second->getSocket(), message);
+        it++;
+    }
 }

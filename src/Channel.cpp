@@ -1,4 +1,6 @@
 #include "../includes/Channel.hpp"
+#include "../includes/Server.hpp"
+#include "../includes/Utils.hpp"
 
 
 Channel::Channel(const std::string& name, const std::string& topic) : name(name), topic(topic){}
@@ -86,3 +88,16 @@ std::set<Client*> Channel::getClients() const
 {
 	return (clients);
 }
+
+/*void Channel::sendMessageOnChan(std::string message)
+{
+	int i = 0;
+	Client *temp;
+	std::set<Client*>::iterator it = clients.begin();
+	while (it != clients.end())
+	{
+		temp = it;
+		Utils::ft_send(it->getSocket(), message);
+		it++;
+	}
+}*/

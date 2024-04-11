@@ -22,6 +22,8 @@ private:
     void user(Client& client, const std::vector<std::string>& args);
     void pass(Client& client, const std::vector<std::string>& args);
     void privMsg(Client& client, const std::vector<std::string>& args);
+    void join(Client& client, const std::vector<std::string>& args);
+    void part(Client& client, const std::vector<std::string>& args);
     // void handleJoinCommand(Client& client, const std::vector<std::string>& args);
     // void handlePartCommand(Client& client, const std::vector<std::string>& args);
     // void handlePrivMsgCommand(Client& client, const std::vector<std::string>& args);

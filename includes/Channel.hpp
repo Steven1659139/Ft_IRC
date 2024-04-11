@@ -4,6 +4,7 @@
 # include <string>
 # include <set>
 # include <algorithm>
+# include <vector>
 # include "Client.hpp" 
 
 class Channel {
@@ -40,6 +41,9 @@ public:
 
     // Récupère les clients du canal
     std::set<Client*> getClients() const;
+
+    // Envoie un message à tous les clients sur le cannal
+    //void sendMessageOnChan(std::string message);
 
 private:
     std::string const name; // Nom du canal

@@ -35,6 +35,19 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
 {
     //std::string appender = "\r\n";
     size_t i = 0;
+    std::string checker = args[0];
+    if (checker[0] == '#')
+    {
+        std::map<std::string, Channel *>::iterator ito = server.getChannel(args[0]);
+        if (ito == server.getChannelEnd())
+            return ;
+        std::string msg = ":" + client.getNickname() + "!localhost PRIVMSG " + args[0] + " :";
+        while (++i < args.size() - 1)
+            msg = args[i] + " ";
+        msg.append(args[i]);
+        server.sendMessageOnChan(msg, ito);
+        return ;
+    }
     if (server.isClientHere(args[0]) == true)
     {
         
@@ -48,6 +61,21 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
     }
 }
 
+void CommandHandler::join(Client &client, const std::vector<std::string>& args)
+{
+    std::map<std::string, Channel *>::iterator it;
+    std::string checker = args[0];
+    std::string newchan;
+    if (checker[0] != '#')
+        newchan += "#" + args[0];
+    else
+        newchan = args[0];
+    server.createChannel(newchan, "defaultTopic");
+    it = server.getChannel(newchan);
+    it->second->addClient(&client);
+    std::string temp = ":" + client.getNickname() + "!localhost JOIN " + newchan + "\r\n";
+    Utils::ft_send(client.getSocket(), temp);
+}
 
 // Traiter une commande reçue d'un client
 void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
@@ -64,7 +92,7 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     } else if (command == "USER") {
         // handleUserCommand(client, args);
     } else if (command == "JOIN") {
-        // handleJoinCommand(client, args);
+        join(client, args);
     } else if (command == "PART") {
         // handlePartCommand(client, args);
     } else if (command == "PRIVMSG") {

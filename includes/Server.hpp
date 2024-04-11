@@ -13,6 +13,7 @@
 # include <fcntl.h>
 # include <iostream>
 # include "Client.hpp"
+# include "Channel.hpp"
 # include "CommandHandler.hpp"
 # include <utility>
 # include <algorithm>
@@ -28,11 +29,16 @@ public:
     void run();
     bool isClientHere(std::string name);
     std::map<int, Client *>::iterator findClient(std::string name);
+    void createChannel(const std::string &name, const std::string &topic);
+    std::map<std::string, Channel *>::iterator getChannel(const std::string& name);
+    std::map<std::string, Channel *>::iterator getChannelEnd();
+    void sendMessageOnChan(std::string msg, std::map<std::string, Channel *>::iterator chan);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
     int serverSocket;                   // Descripteur de fichier pour le socket serveur
     std::map<int, Client*> clients;     // map de pointeur sur client avec leur fd comme clé
+    std::map<std::string, Channel*> channels; // map de pointeur sur channels avec leur nom comme clé
     int max_sd;
     timeval timeout;
 
