@@ -188,6 +188,11 @@ void Server::run() {
         processClientActivity(readfds);
     }
 }
+std::string Server::getPass()
+{
+    return this->password;
+}
+
 /**
  * Prépare l'ensemble des descripteurs de fichier et le descripteur maximum pour `select()`.
  * - Réinitialise l'ensemble des descripteurs de fichier (`readfds`) pour la lecture.
@@ -282,13 +287,27 @@ std::map<std::string, Channel *>::iterator Server::getChannelEnd()
     return (it);
 }
 
-void Server::sendMessageOnChan(std::string message, std::map<std::string, Channel *>::iterator chan)
+
+void Server::sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter)
 {
-    std::map<int, Client *>::iterator it = clients.begin();
-    while (it != clients.end())
-    {
-        if (chan->second->isClientInChannel(it->second))
-            Utils::ft_send(it->second->getSocket(), message);
-        it++;
+    const std::set<Client*>& clientsInChannel = channel->getClients();
+    for (std::set<Client*>::const_iterator it = clientsInChannel.begin(); it != clientsInChannel.end(); ++it) {
+        Client* client = *it;
+        if (client && !client->sendMessage(message)) {
+            std::cerr << "Erreur lors de l'envoi du message au client " << client->getNickname() << std::endl;
+        }
     }
 }
+
+
+
+// void Server::sendMessageOnChan(std::string message, std::map<std::string, Channel *>::iterator chan)
+// {
+//     std::map<int, Client *>::iterator it = clients.begin();
+//     while (it != clients.end())
+//     {
+//         if (chan->second->isClientInChannel(it->second))
+//             Utils::ft_send(it->second->getSocket(), message);
+//         it++;
+//     }
+// }

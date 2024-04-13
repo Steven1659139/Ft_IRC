@@ -7,7 +7,7 @@
         "configurations": [
             {
                 "name": "(lldb) Lancer",
-                "type": "cppdbg",
+                "type": "lldb",
                 "request": "launch",
                 "program": "${workspaceFolder}/ircserv",
                 "args": ["4242" "123"],

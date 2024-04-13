@@ -27,12 +27,13 @@ public:
     ~Server();
 
     void run();
+    std::string getPass();
     bool isClientHere(std::string name);
     std::map<int, Client *>::iterator findClient(std::string name);
     void createChannel(const std::string &name, const std::string &topic);
     std::map<std::string, Channel *>::iterator getChannel(const std::string& name);
     std::map<std::string, Channel *>::iterator getChannelEnd();
-    void sendMessageOnChan(std::string msg, std::map<std::string, Channel *>::iterator chan);
+    void sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion

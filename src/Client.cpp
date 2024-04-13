@@ -28,7 +28,6 @@ void Client::setNickname(const std::string &nickname)
     return ;
 }
 
-
 void Client::setAuth(bool value) {
     auth = value;
 }
@@ -57,7 +56,6 @@ void Client::leaveChannel(const std::string &channelName)
 }
 
 bool Client::sendMessage(const std::string& message) const {
-    // Ajout de "\r\n" à la fin du message pour respecter le protocole IRC
     std::string formattedMessage = message + "\r\n";
 
     ssize_t bytesSent = send(socket, formattedMessage.c_str(), formattedMessage.length(), 0);
