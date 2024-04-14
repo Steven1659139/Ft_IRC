@@ -290,6 +290,8 @@ std::map<std::string, Channel *>::iterator Server::getChannelEnd()
 
 void Server::sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter)
 {
+    Channel* channel = chanIter->second;
+
     const std::set<Client*>& clientsInChannel = channel->getClients();
     for (std::set<Client*>::const_iterator it = clientsInChannel.begin(); it != clientsInChannel.end(); ++it) {
         Client* client = *it;

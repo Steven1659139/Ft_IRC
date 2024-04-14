@@ -34,6 +34,7 @@ public:
     std::map<std::string, Channel *>::iterator getChannel(const std::string& name);
     std::map<std::string, Channel *>::iterator getChannelEnd();
     void sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter);
+    bool authenticateClient(const std::string& receivedPassword);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
@@ -68,7 +69,6 @@ private:
     void closeClientConnection(int clientSocket);
 
     // Vérifier si le mot de passe fourni est correct
-    bool authenticateClient(const std::string& receivedPassword);
 
     void processClientActivity(fd_set& readfds);
     void initializeFDSet(fd_set& readfds, int& max_sd);

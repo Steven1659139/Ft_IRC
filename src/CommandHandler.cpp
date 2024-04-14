@@ -15,21 +15,21 @@ std::vector<std::string> CommandHandler::splitCommandLine(const std::string& com
 
 void CommandHandler::pass(Client& client, const std::vector<std::string>& args) {
     if (args.empty()) {
-        std::cerr << "Erreur : Aucun mot de passe fourni." << std::endl;
+        std::cout << "ERREUR : Aucun mot de passe fourni" << std::endl;
         return;
     }
 
-    std::string receivedPassword = args[0]; // Prend le premier argument comme mot de passe
-    
-    // Ici, vous vérifiez le mot de passe reçu.
-    // Pour cet exemple, supposons que le mot de passe correct est "secret".
-    if (receivedPassword == server.getPass()) {
+    std::string providedPassword = args[0];
+    if (server.authenticateClient(providedPassword)) {
         client.setAuth(true);
-        std::cout << "Client authentifié avec succès." << std::endl;
+        std::cout << "Client authentifié avec succès" << std::endl;
     } else {
-        std::cerr << "Erreur : Mot de passe incorrect." << std::endl;
+        std::cout << "ERREUR : Mot de passe incorrect" << std::endl;
+
+        client.setAuth(false);
     }
 }
+
 
 void CommandHandler::privMsg(Client & client, const std::vector<std::string>& args)
 {
@@ -109,19 +109,22 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     args.erase(args.begin());
 
     // Dispatch vers la commande appropriée
-    if (command == "NICK") {
-        nick(client, args);
-    } else if (command == "USER") {
-        // handleUserCommand(client, args);
-    } else if (command == "JOIN") {
-        join(client, args);
-    } else if (command == "PART") {
-        // handlePartCommand(client, args);
-    } else if (command == "#PRIVMSG") {
-        privMsg(client, args);
-    } else if (command == "QUIT") {
-        // handleQuitCommand(client, args);
-    } else if (command == "PASS") {
+    if (command == "PASS") 
         pass(client, args);
+    if (client.isAuth())
+    {
+        if (command == "NICK") {
+            nick(client, args);
+        } else if (command == "USER") {
+            // handleUserCommand(client, args);
+        } else if (command == "JOIN") {
+            join(client, args);
+        } else if (command == "PART") {
+            // handlePartCommand(client, args);
+        } else if (command == "#PRIVMSG") {
+            privMsg(client, args);
+        } else if (command == "QUIT") {
+            // handleQuitCommand(client, args);
+        }
     }
 }

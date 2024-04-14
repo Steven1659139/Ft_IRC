@@ -33,6 +33,10 @@ void Client::setAuth(bool value) {
 }
 
 bool Client::isAuth() const {
+    if (auth)
+        std::cout << "Le client est authentifié\n";
+    else
+        std::cout << "Le client n'est pas authentifié\n";
     return auth;
 }
 
