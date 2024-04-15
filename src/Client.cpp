@@ -1,5 +1,6 @@
 #include "../includes/Client.hpp"
 #include "../includes/Channel.hpp"
+#include "../includes/Server.hpp"
 
 Client::Client(int socket, const std::string& nickname, const std::string& username) : socket(socket), nickname(nickname), username(username)
 {
@@ -49,7 +50,7 @@ bool Client::isAuth() const
     }
     else
     {
-        send(this->getSocket(), "451\r\n", 5, 0);
+        sendMessage(ERR_NOTREGEISTERED(nickname));
         return false;
     }
 }
@@ -61,7 +62,7 @@ void Client::joinChannel(Channel* ch)
     if (i == 0)
         channels.insert(std::make_pair(ch->getName(), ch));
     else
-        std::cerr << "You have already joined a channel named " << ch->getName() << "!" << std::endl;
+        sendMessage(ERR_USERONCHANNEL(nickname, nickname,ch->getName()));
 }
 
 void Client::leaveChannel(const std::string &channelName)
@@ -70,7 +71,7 @@ void Client::leaveChannel(const std::string &channelName)
     if (i == 1)
         channels.erase(channelName);
     else
-        std::cerr << "You have not joined any channel named " << channelName << "!" << std::endl;
+        sendMessage(ERR_NOTONCHANNEL(nickname, channelName));
 }
 
 bool Client::sendMessage(const std::string& message) const {

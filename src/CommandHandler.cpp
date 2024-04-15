@@ -27,7 +27,9 @@ void CommandHandler::pass(Client& client, const std::vector<std::string>& args) 
         server.authenticateClient(client);
     }
     else
-        send(client.getSocket(), "464\r\n", 5, 0);
+    {
+        client.sendMessage(ERR_PASSWDMISMATCH(client.getNickname()));
+    }
 }
 
 
@@ -122,8 +124,9 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     if (it != commands.end()) {
         CommandFunc func = it->second;
         (this->*func)(client, args);
-    } else {
-        send(client.getSocket(), "421\r\n", 5, 0);
+    } else
+    {
+         client.sendMessage(ERR_UNKOWNCOMMAND(client.getNickname(), command));
     }
 }
 

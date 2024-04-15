@@ -26,7 +26,7 @@
 //ERRs
 # define ERR_NEEDMOREPARAMS(nickname, command) ":localhost 461 " + nickname + " " + command + " :Not enough parameters\r\n"
 # define ERR_ALREADYREGISTERED(nickname) ":localhost 462 " + nickname + " : Unauthorized command (already registered)"
-# define ERR_UNKOWNCOMMAND(nickname, command) ":localhost 421 " + nickname + " :" + command " :Unknown command.\r\n"
+# define ERR_UNKOWNCOMMAND(nickname, command) ":localhost 421 " + nickname + " :" + command + " :Unknown command.\r\n"
 # define ERR_NONICKNAMEGIVEN(nickname) ":localhost 431 " + nickname + " :No nickname given\r\n"
 # define ERR_NICKNAMEINUSE(nickname, newnick) ":localhost 433 " + nickname + " :" + newnick + " :Nickname is already in use"
 # define ERR_ERRONEUSNICKNAME(nickname, newnick) ":localhost 432 " + nickname + " :" + newnick + " :Erroneous nickname.\r\n"
@@ -44,7 +44,7 @@
 # define ERR_USERONCHANNEL(nickname, target, channel) ":localhost 443 " + nickname + " :" + target + " " + channel + " :is already on channel.\r\n"
 # define ERR_NOTEXTTOSEND(nickname) ":localhost 412 " + nickname + " :No text to send.\n\r"
 # define ERR_NOTREGEISTERED(nickname) ":localhost 451 " + nickname + " :You have not registered.\r\n"
-# define ERR_PASSWDMISMATCH(nickaname) ":localhost 464 " + nickname + " :Password incorrect.\r\n"
+# define ERR_PASSWDMISMATCH(nickname) ":localhost 464 " + nickname + " :Password incorrect.\r\n"
 
 
 class Server {

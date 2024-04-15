@@ -235,7 +235,7 @@ bool Server::authenticateClient(Client &client)
     if (client.goodPass && !client.getNickname().empty() && !client.getUsername().empty())
     {
         client.setAuth(true);
-        send(client.getSocket(), "001\r\n", 5, 0);
+        client.sendMessage(RPL_WELCOME(client.getNickname()));
         std::cout << "client authentifié avec succès\n";
         return (true);
     }
