@@ -117,7 +117,7 @@ void Server::acceptNewConnection() {
         return;
     }
     // Créer un nouvel objet Client et l'ajouter à la map
-    Client* newClient = new Client(clientSocket, "defaultNickname", "defaultUsername", false);
+    Client* newClient = new Client(clientSocket, "", "");
     clients.insert(std::make_pair(clientSocket, newClient)); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
 
     std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
@@ -133,7 +133,6 @@ void Server::closeClientConnection(int clientSocket) {
     }
     // Pas besoin d'afficher d'erreur ici la fonction est conçue pour être idempotente.
 }
-
 
 bool Server::handleClientData(int clientSocket) {
     char buffer[1024];
@@ -188,6 +187,7 @@ void Server::run() {
         processClientActivity(readfds);
     }
 }
+
 std::string Server::getPass()
 {
     return this->password;
@@ -230,12 +230,21 @@ void Server::processClientActivity(fd_set& readfds) {
     }
 }
 
-bool Server::authenticateClient(const std::string& receivedPassword)
+bool Server::authenticateClient(Client &client)
 {
-    if (receivedPassword == password)
-        return true;
+    if (client.goodPass && !client.getNickname().empty() && !client.getUsername().empty())
+    {
+        client.setAuth(true);
+        send(client.getSocket(), "001\r\n", 5, 0);
+        std::cout << "client authentifié avec succès\n";
+        return (true);
+    }
     else
+    {
+        std::cout << "client non authentifié\n";
+        client.setAuth(false);
         return false;
+    }
 }
 
 std::map<int, Client *>::iterator Server::findClient(std::string name)
@@ -287,7 +296,6 @@ std::map<std::string, Channel *>::iterator Server::getChannelEnd()
     return (it);
 }
 
-
 void Server::sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter)
 {
     Channel* channel = chanIter->second;
@@ -300,16 +308,3 @@ void Server::sendMessageOnChan(const std::string& message, std::map<std::string,
         }
     }
 }
-
-
-
-// void Server::sendMessageOnChan(std::string message, std::map<std::string, Channel *>::iterator chan)
-// {
-//     std::map<int, Client *>::iterator it = clients.begin();
-//     while (it != clients.end())
-//     {
-//         if (chan->second->isClientInChannel(it->second))
-//             Utils::ft_send(it->second->getSocket(), message);
-//         it++;
-//     }
-// }

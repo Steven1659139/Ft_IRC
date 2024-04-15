@@ -1,7 +1,11 @@
 #include "../includes/Client.hpp"
 #include "../includes/Channel.hpp"
 
-Client::Client(int socket, const std::string& nickname, const std::string& username, bool auth) : socket(socket), nickname(nickname), username(username), auth(auth){}
+Client::Client(int socket, const std::string& nickname, const std::string& username) : socket(socket), nickname(nickname), username(username)
+{
+    auth = false;
+    goodPass = false;
+}
 
 Client::~Client() {
     close(socket);
@@ -25,19 +29,29 @@ std::string Client::getNickname() const
 void Client::setNickname(const std::string &nickname)
 {
     this->nickname = nickname;
-    return ;
+}
+
+void Client::setUsername(const std::string &username)
+{
+    this->username = username;
 }
 
 void Client::setAuth(bool value) {
     auth = value;
 }
 
-bool Client::isAuth() const {
-    if (auth)
+bool Client::isAuth() const
+{
+    if ((goodPass) && (!nickname.empty()))
+    {
         std::cout << "Le client est authentifié\n";
+        return true;
+    }
     else
-        std::cout << "Le client n'est pas authentifié\n";
-    return auth;
+    {
+        send(this->getSocket(), "451\r\n", 5, 0);
+        return false;
+    }
 }
 
 

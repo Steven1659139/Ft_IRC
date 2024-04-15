@@ -16,18 +16,20 @@ class Server;
 class Client {
 public:
     // Constructeur explicite
-    explicit Client(int socket, const std::string& nickname, const std::string& username, bool auth);
+    explicit Client(int socket, const std::string& nickname, const std::string& username);
 
     ~Client();
 
 
     void setAuth(bool value);
     bool isAuth() const;
+    bool goodPass;
 
     // Méthodes pour la gestion des clients et des canaux (décommentez ou implémentez selon les besoins)
     int getSocket() const;
     std::string getNickname() const;
     void setNickname(const std::string& nickname);
+    void setUsername(const std::string& username);
     std::string getUsername() const;
     bool sendMessage(const std::string& message) const;
     void joinChannel(Channel* ch);

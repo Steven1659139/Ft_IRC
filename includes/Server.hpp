@@ -62,7 +62,7 @@ public:
     std::map<std::string, Channel *>::iterator getChannel(const std::string& name);
     std::map<std::string, Channel *>::iterator getChannelEnd();
     void sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter);
-    bool authenticateClient(const std::string& receivedPassword);
+    bool authenticateClient(Client &client);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion

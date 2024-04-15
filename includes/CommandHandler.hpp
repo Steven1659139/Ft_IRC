@@ -10,12 +10,15 @@ class CommandHandler {
 public:
     // Associer le CommandHandler à une instance de serveur
     CommandHandler(Server& server);
+    typedef void (CommandHandler::*CommandFunc)(Client&, const std::vector<std::string>&);
 
     // Traiter une commande reçue d'un client
     void handleCommand(Client& client, const std::string& commandLine);
+    void initializeCommands();
 
 private:
     Server& server; // Référence au serveur pour accéder aux clients et aux canaux
+    std::map<std::string, CommandFunc> commands;
 
     // Méthodes spécifiques à chaque commande
     void nick(Client& client, const std::vector<std::string>& args);
@@ -24,9 +27,7 @@ private:
     void privMsg(Client& client, const std::vector<std::string>& args);
     void join(Client& client, const std::vector<std::string>& args);
     void part(Client& client, const std::vector<std::string>& args);
-    // void handleJoinCommand(Client& client, const std::vector<std::string>& args);
     // void handlePartCommand(Client& client, const std::vector<std::string>& args);
-    // void handlePrivMsgCommand(Client& client, const std::vector<std::string>& args);
     // void handleQuitCommand(Client& client, const std::vector<std::string>& args);
     // Ajoutez d'autres commandes selon les besoins...
 
