@@ -18,6 +18,34 @@
 # include <utility>
 # include <algorithm>
 
+// RPLs
+# define RPL_WELCOME(nickname)  ":localhost 001 " + nickname + " :Welcome " + nickname + " in this IRC server!\r\n"
+# define RPL_TOPIC(nickname, channel, topic) ":localhost 331 " + nickname = " :" + channel + ":" + topic + "\r\n"
+# define RPL_NOTOPIC(nickname, channel) ":localhost 331 " + nickname = " :" + channel + " :No topic is set.\r\n"
+# define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n" 
+//ERRs
+# define ERR_NEEDMOREPARAMS(nickname, command) ":localhost 461 " + nickname + " " + command + " :Not enough parameters\r\n"
+# define ERR_ALREADYREGISTERED(nickname) ":localhost 462 " + nickname + " : Unauthorized command (already registered)"
+# define ERR_UNKOWNCOMMAND(nickname, command) ":localhost 421 " + nickname + " :" + command " :Unknown command.\r\n"
+# define ERR_NONICKNAMEGIVEN(nickname) ":localhost 431 " + nickname + " :No nickname given\r\n"
+# define ERR_NICKNAMEINUSE(nickname, newnick) ":localhost 433 " + nickname + " :" + newnick + " :Nickname is already in use"
+# define ERR_ERRONEUSNICKNAME(nickname, newnick) ":localhost 432 " + nickname + " :" + newnick + " :Erroneous nickname.\r\n"
+# define ERR_INVITEONLYCHAN(nickname, channel) ":localhost 473 " + nickname + " :" + channel " :Cannot join channel (+i)"
+# define ERR_CHANNELISFULL(nickname, channel) ":localhost 471 " + nickname + " :" + channel " :Cannot join channel (+l)"
+# define ERR_NOSUCHCHANNEL(nickname, channel) ":localhost 402 " + nickname + " :" + channel + " :No such channel"
+# define ERR_BADCHANNELKEY(nickname, channel) ":localhost 475 " + nickname + " :" + channel " :Cannot join channel (+k)"
+# define ERR_TOOMANYCHANNELS(nickname, channel) ":localhost 405 " + nickname + " :" + channel + " :You have joined too many channels.\r\n"
+# define ERR_NOTONCHANNEL(nickname, channel) ":localhost 442 " + nickname + " :" + channel + " :You're not on that channel.\r\n"
+# define ERR_USERNOTINCHANNEL(nickname, target, channel) ":localhost 441 " + nickname + " :" + target + " " + channel + " :They aren't on that channel.\r\n"
+# define ERR_CHANOPRIVSNEEDED(nickname, channel) ":localhost 482 " + nickname + " :" + channel " :You're not a channel operator.\r\n"
+# define ERR_UNKOWNMODE(nickname, char, channel) ":localhost 472 " + nickname + " :" + char + " :is unkown mode char to me for " + channel + ".\r\n"
+# define ERR_KEYSET(nickname, channel) ":localhost 467 " + nickname + " :" + channel + " :Channel key already set"
+# define ERR_NOSUCHNICK(nickname, channel) ":localhost 401 " + nickname + " :" + channel + " :No such nick/channel.\r\n"
+# define ERR_USERONCHANNEL(nickname, target, channel) ":localhost 443 " + nickname + " :" + target + " " + channel + " :is already on channel.\r\n"
+# define ERR_NOTEXTTOSEND(nickname) ":localhost 412 " + nickname + " :No text to send.\n\r"
+# define ERR_NOTREGEISTERED(nickname) ":localhost 451 " + nickname + " :You have not registered.\r\n"
+# define ERR_PASSWDMISMATCH(nickaname) ":localhost 464 " + nickname + " :Password incorrect.\r\n"
+
 
 class Server {
 public:
