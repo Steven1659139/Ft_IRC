@@ -178,6 +178,15 @@ void CommandHandler::part(Client& client, const std::vector<std::string>& args)
         Utils::ft_send(client.getSocket(), FORM_PART(client.getNickname(), temp3));
 }
 
+void CommandHandler::quit(Client &client, const std::vector<std::string>& args)
+{
+    if (args.size() > 0)
+        Utils::ft_send(client.getSocket(), FORM_QUIT(client.getNickname(), args[0]));
+    else
+        Utils::ft_send(client.getSocket(), FORM_QUIT(client.getNickname(), "Leaving..."));
+    server.closeClientConnection(client.getSocket());
+}
+
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
 {
     std::string newNickname = args[0];
@@ -223,7 +232,7 @@ void CommandHandler::initializeCommands() {
     commands["PASS"] = &CommandHandler::pass;
     commands["PART"] = &CommandHandler::part;
     // commands["KICK"] = &CommandHandler::kick;
-    // commands["QUIT"] = &CommandHandler::quit;
+    commands["QUIT"] = &CommandHandler::quit;
 }
 
 // void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {

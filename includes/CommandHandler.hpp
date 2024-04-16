@@ -27,6 +27,7 @@ private:
     void privMsg(Client& client, const std::vector<std::string>& args);
     void join(Client& client, const std::vector<std::string>& args);
     void part(Client& client, const std::vector<std::string>& args);
+    void quit(Client& client, const std::vector<std::string>& args);
     // void handlePartCommand(Client& client, const std::vector<std::string>& args);
     // void handleQuitCommand(Client& client, const std::vector<std::string>& args);
     // Ajoutez d'autres commandes selon les besoins...
