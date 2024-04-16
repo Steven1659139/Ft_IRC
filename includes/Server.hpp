@@ -18,6 +18,15 @@
 # include <utility>
 # include <algorithm>
 
+
+// Formatted replies from the server to the client
+# define FORM_JOIN(nickname, channel) ":" + nickname + "!localhost JOIN " + channel + "\r\n"
+# define FORM_PART(nickname, channel) ":" + nickname + "!localhost PART " + channel + "\r\n"
+# define FORM_PARTMSG(nickname, channel, message) ":" + nickname + "!localhost PART " + channel + " " + message + "\r\n"
+# define FORM_MSG(nickname, target, message) ":" + nickname + "!localhost PRIVMSG " + target + " :" + message + "\r\n"
+# define FORM_NICK(nickname, newnick) ":" + nickname + "!localhost NICK :" + newnick + "\r\n"
+# define FORM_PASS(nickname, pass) ":" + nickname + "!localhost PASS :" + pass + "\r\n"
+
 // RPLs
 # define RPL_WELCOME(nickname)  ":localhost 001 " + nickname + " :Welcome " + nickname + " in this IRC server!\r\n"
 # define RPL_TOPIC(nickname, channel, topic) ":localhost 331 " + nickname = " :" + channel + ":" + topic + "\r\n"
@@ -61,8 +70,9 @@ public:
     void createChannel(const std::string &name, const std::string &topic);
     std::map<std::string, Channel *>::iterator getChannel(const std::string& name);
     std::map<std::string, Channel *>::iterator getChannelEnd();
-    void sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter);
+    void sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter, Client &sender);
     bool authenticateClient(Client &client);
+    void leaveAllChans(Client &client);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion

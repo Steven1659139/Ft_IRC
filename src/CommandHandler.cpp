@@ -25,10 +25,11 @@ void CommandHandler::pass(Client& client, const std::vector<std::string>& args) 
     {
         client.goodPass = true;
         server.authenticateClient(client);
+        Utils::ft_send(client.getSocket(), FORM_PASS(client.getNickname(), providedPassword));
     }
     else
     {
-        client.sendMessage(ERR_PASSWDMISMATCH(client.getNickname()));
+        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
     }
 }
 
@@ -37,41 +38,43 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
 {
     if(client.isAuth())
     {
-        //std::string appender = "\r\n";
         size_t i = 0;
         std::string checker = args[0];
         if (checker[0] == '#')
         {
             std::map<std::string, Channel *>::iterator ito = server.getChannel(args[0]);
             if (ito == server.getChannelEnd())
+            {
+                Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), args[0]));
                 return ;
-            std::string msg = ":" + client.getNickname() + "!localhost PRIVMSG " + args[0] + " :";
-
-
+            }
+            if (!ito->second->isClientInChannel(&client))
+            {
+                Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), ito->second->getName()));
+                return ;
+            }
+            std::string msg;
             // J'ai modifié la boucle pour éviter les segfault si args est vide
             for (size_t i = 1; i < args.size(); ++i) {
                 msg += args[i];
                 if (i < args.size() - 1) 
                     msg += " ";
             }
-
-            // while (++i < args.size() - 1)
-            //     msg = args[i] + " ";
-            // msg.append(args[i]);
-            server.sendMessageOnChan(msg, ito);
+            server.sendMessageOnChan(FORM_MSG(client.getNickname(), ito->second->getName(), msg), ito, client);
             return ;
         }
         if (server.isClientHere(args[0]) == true)
         {
-            
             std::map<int, Client *>::iterator it = server.findClient(args[0]);
-            std::string temp = ":" + client.getNickname() + "!localhost PRIVMSG " + it->second->getNickname() + " :";
+            std::string temp;
             while (++i < args.size() - 1)
                 temp += args[i] + " ";
             temp.append(args[i]);
             //temp.append(appender);
-            Utils::ft_send(it->second->getSocket(), temp);
+            Utils::ft_send(it->second->getSocket(), FORM_MSG(client.getNickname(), it->second->getNickname(), temp));
         }
+        else
+            Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), args[0]));
     }
 }
 
@@ -79,28 +82,110 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
 {
     if (client.isAuth())
     {
+        if (!args[0].compare("#0"))
+        {
+            server.leaveAllChans(client);
+            return ;
+        }
         std::map<std::string, Channel *>::iterator it;
-        std::string checker = args[0];
+        size_t i = 0;
+        std::string checker;
         std::string newchan;
-        if (checker[0] != '#')
-            newchan += "#" + args[0];
-        else
-            newchan = args[0];
-        server.createChannel(newchan, "defaultTopic");
-        it = server.getChannel(newchan);
-        it->second->addClient(&client);
-        std::string temp = ":" + client.getNickname() + "!localhost JOIN " + newchan + "\r\n";
-        Utils::ft_send(client.getSocket(), temp);
+        std::vector<std::string> vec;
+        std::string temp;
+        std::string temp2 = args[0];
+        while (i < 1)
+        {
+            i = temp2.find_first_of(',');
+            if (i == std::string::npos)
+            {
+                vec.push_back(temp2);
+                break ;
+            }
+            temp = temp2.substr(0, i);
+            temp2.erase(0, i + 1);
+            vec.push_back(temp);
+            i = 0;
+        }
+        i = 0;
+        while (i < vec.size())
+        {
+            checker = vec[i];
+            if (checker[0] != '#')
+                newchan += "#" + vec[i];
+            else
+                newchan = vec[i];
+            server.createChannel(newchan, "");
+            it = server.getChannel(newchan);
+            it->second->addClient(&client);
+            Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
+            newchan.clear();
+            i++;
+        }
     }
 }
 
+void CommandHandler::part(Client& client, const std::vector<std::string>& args)
+{
+    std::vector<std::string> vec;
+    std::string temp;
+    std::string temp2 = args[0];
+    size_t i = 0;
+    while (i < 1)
+    {
+        i = temp2.find_first_of(',');
+        if (i == std::string::npos)
+        {
+            vec.push_back(temp2);
+            break ;
+        }
+        temp = temp2.substr(0, i);
+        temp2.erase(0, i + 1);
+        vec.push_back(temp);
+        i = 0;
+    }
+    i = 0;
+    std::map<std::string, Channel *>::iterator it;
+    std::string temp3;
+    while (i < vec.size())
+    {
+        it = server.getChannel(vec[i]);
+        if (it == server.getChannelEnd())
+            Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), vec[i]));
+        else if (it != server.getChannelEnd() && !it->second->isClientInChannel(&client))
+            Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), vec[i]));
+        else
+        {
+            it->second->removeClient(&client);
+            if (temp3.empty())
+                temp3.append(it->second->getName());
+            else
+                temp3 += "," + it->second->getName();
+        }
+        i++;
+    }
+    if (args.size() > 1)
+    {
+        std::string msg;
+        for (size_t j = 1; j < args.size(); ++j) {
+                msg += args[j];
+                if (j < args.size() - 1) 
+                    msg += " ";
+            }
+        Utils::ft_send(client.getSocket(), FORM_PARTMSG(client.getNickname(), temp3, msg));
+    }
+    else
+        Utils::ft_send(client.getSocket(), FORM_PART(client.getNickname(), temp3));
+}
 
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
 {
     std::string newNickname = args[0];
 
+    Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
     client.setNickname(newNickname);
     std::cout << "Nickname mis à jour : " << newNickname << std::endl;
+    Utils::ft_send(client.getSocket(), RPL_WELCOME(client.getNickname()));
 }
 
 void CommandHandler::user(Client& client, const std::vector<std::string>& args)
@@ -134,9 +219,9 @@ void CommandHandler::initializeCommands() {
     commands["NICK"] = &CommandHandler::nick;
     commands["USER"] = &CommandHandler::user;
     commands["JOIN"] = &CommandHandler::join;
-    commands["#PRIVMSG"] = &CommandHandler::privMsg;
+    commands["PRIVMSG"] = &CommandHandler::privMsg;
     commands["PASS"] = &CommandHandler::pass;
-    // commands["PART"] = &CommandHandler::part;
+    commands["PART"] = &CommandHandler::part;
     // commands["KICK"] = &CommandHandler::kick;
     // commands["QUIT"] = &CommandHandler::quit;
 }

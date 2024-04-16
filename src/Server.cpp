@@ -296,15 +296,36 @@ std::map<std::string, Channel *>::iterator Server::getChannelEnd()
     return (it);
 }
 
-void Server::sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter)
+void Server::sendMessageOnChan(const std::string& message, std::map<std::string, Channel*>::iterator chanIter, Client& sender)
 {
     Channel* channel = chanIter->second;
 
     const std::set<Client*>& clientsInChannel = channel->getClients();
     for (std::set<Client*>::const_iterator it = clientsInChannel.begin(); it != clientsInChannel.end(); ++it) {
         Client* client = *it;
+        if (client->getNickname() == sender.getNickname())
+            continue ;
         if (client && !client->sendMessage(message)) {
             std::cerr << "Erreur lors de l'envoi du message au client " << client->getNickname() << std::endl;
         }
     }
+}
+
+void Server::leaveAllChans(Client &client)
+{
+    std::map<std::string, Channel *>::iterator it = channels.begin();
+    std::string targets;
+    while (it != channels.end())
+    {
+        if (it->second->isClientInChannel(&client))
+        {
+            it->second->removeClient(&client);
+            if (targets.empty())
+                targets.append(it->second->getName());
+            else
+                targets += "," + it->second->getName();
+        } 
+        it++;
+    }
+    Utils::ft_send(client.getSocket(), FORM_PART(client.getNickname(), targets));
 }
