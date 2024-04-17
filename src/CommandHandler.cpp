@@ -92,6 +92,7 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
         std::string checker;
         std::string newchan;
         std::vector<std::string> vec;
+        std::vector<std::string> keyvec;
         std::string temp;
         std::string temp2 = args[0];
         while (i < 1)
@@ -108,8 +109,29 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
             i = 0;
         }
         i = 0;
+        if (args.size() > 1)
+        {
+            temp2 = args[1];
+            while (i < 1)
+            {
+                i = temp2.find_first_of(',');
+                if (i == std::string::npos)
+                {
+                    keyvec.push_back(temp2);
+                    break ;
+                }
+                temp = temp2.substr(0, i);
+                temp2.erase(0, i + 1);
+                keyvec.push_back(temp);
+                i = 0;
+            }
+        }
+        i = 0;
+        bool canjoin;
         while (i < vec.size())
         {
+            if (i > keyvec.size())
+                keyvec.push_back("");
             checker = vec[i];
             if (checker[0] != '#')
                 newchan += "#" + vec[i];
@@ -117,12 +139,39 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
                 newchan = vec[i];
             server.createChannel(newchan, "");
             it = server.getChannel(newchan);
-            it->second->addClient(&client);
+            if (it->second->getClients().empty())
+            {
+                it->second->addClient(&client);
+                it->second->addOperator(&client);
+            }
+            else
+            {
+                canjoin = modeCheck(it->second, keyvec[i]);
+                if (canjoin == false)
+                {
+                    i++;
+                    newchan.clear();
+                    continue;
+                }
+               it->second->addClient(&client); 
+            }
             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
             newchan.clear();
             i++;
         }
     }
+}
+
+bool CommandHandler::modeCheck(Channel *chan, std::string key)
+{
+    t_modes vals = chan->getModes();
+    if (vals.inviteonly == true)
+        return (false);
+    if (vals.istherelimit == true && chan->getClients().size() >= vals.limit)
+        return (false);
+    if (vals.istherekey == true && key != vals.key)
+        return (false);
+    return (true);
 }
 
 void CommandHandler::part(Client& client, const std::vector<std::string>& args)

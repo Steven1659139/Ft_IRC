@@ -3,7 +3,120 @@
 #include "../includes/Utils.hpp"
 
 
-Channel::Channel(const std::string& name, const std::string& topic) : name(name), topic(topic){}
+Channel::Channel(const std::string& name, const std::string& topic) : name(name), topic(topic)
+{
+	modes.istherekey = false;
+	modes.inviteonly = false;
+	modes.key = "";
+	modes.istherelimit = false;
+	modes.limit = 0;
+	modes.modtopic = false;
+	setcoms["+k"] = setKey;
+	setcoms["-k"] = remKey;
+	setcoms["+t"] = setModTopic;
+	setcoms["-t"] = remModTopic;
+	setcoms["+i"] = setInvite;
+	setcoms["-i"] = remInvite;
+	setcoms["+l"] = setLimit;
+	setcoms["-l"] = remLimit;
+}
+
+void Channel::setKey(Client& client, const std::vector<std::string>& args)
+{
+	if (args.size() < 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
+		return ;
+	}
+	if (args.size() > 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
+		return ;
+	}
+	if (modes.istherekey == true)
+	{
+		Utils::ft_send(client.getSocket(), ERR_KEYSET(client.getNickname(), getName()));
+		return ;
+	}
+	modes.istherekey = true;
+	modes.key = args[1];
+}
+
+void Channel::remKey(Client& client, const std::vector<std::string>& args)
+{
+	if (args.size() < 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
+		return ;
+	}
+	if (args.size() > 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
+		return ;
+	}
+	modes.key = false;
+	modes.key.clear();
+}
+
+void Channel::setModTopic(Client& client, const std::vector<std::string>& args)
+{
+	(void)client;
+	(void)args;
+	modes.modtopic = true;
+}
+
+void Channel::remModTopic(Client& client, const std::vector<std::string>& args)
+{
+	(void)client;
+	(void)args;
+	modes.modtopic = false;
+}
+
+void Channel::setInvite(Client& client, const std::vector<std::string>& args)
+{
+	(void)client;
+	(void)args;
+	modes.inviteonly = true;
+}
+
+void Channel::remInvite(Client& client, const std::vector<std::string>& args)
+{
+	(void)client;
+	(void)args;
+	modes.inviteonly = false;
+}
+
+void Channel::setLimit(Client& client, const std::vector<std::string>& args)
+{
+	if (args.size() < 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
+		return ;
+	}
+	if (args.size() > 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
+		return ;
+	}
+	modes.istherelimit = true;
+	modes.limit = std::stoi(args[1]);
+}
+
+void Channel::remLimit(Client& client, const std::vector<std::string>& args)
+{
+	if (args.size() < 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
+		return ;
+	}
+	if (args.size() > 2)
+	{
+		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
+		return ;
+	}
+	modes.istherelimit = false;
+	modes.limit = 0;
+}
 
 std::string	Channel::getName() const
 {
@@ -87,6 +200,11 @@ std::string Channel::getTopic() const
 std::set<Client*> Channel::getClients() const
 {
 	return (clients);
+}
+
+t_modes Channel::getModes() const
+{
+	return (modes);
 }
 
 /*void Channel::sendMessageOnChan(std::string message)
