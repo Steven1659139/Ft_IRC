@@ -59,6 +59,7 @@ public:
 
     // Récupère les modes du channel
     t_modes getModes() const;
+    std::string strModes() const;
 
     //Fonction pour changer les modes, qui va appeler des fonctions privées.
     void    setModes(Client &client, const std::vector<std::string> &args);

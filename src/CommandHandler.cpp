@@ -130,7 +130,7 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
         bool canjoin;
         while (i < vec.size())
         {
-            if (i > keyvec.size())
+            if (i >= keyvec.size())
                 keyvec.push_back("");
             checker = vec[i];
             if (checker[0] != '#')
@@ -146,7 +146,7 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
             }
             else
             {
-                canjoin = modeCheck(it->second, keyvec[i]);
+                canjoin = modeCheck(it->second, keyvec[i], client);
                 if (canjoin == false)
                 {
                     i++;
@@ -162,15 +162,24 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
     }
 }
 
-bool CommandHandler::modeCheck(Channel *chan, std::string key)
+bool CommandHandler::modeCheck(Channel *chan, std::string key, Client &client)
 {
     t_modes vals = chan->getModes();
     if (vals.inviteonly == true)
+    {
+        Utils::ft_send(client.getSocket(), ERR_INVITEONLYCHAN(client.getNickname(), chan->getName()));
         return (false);
+    }
     if (vals.istherelimit == true && chan->getClients().size() >= vals.limit)
+    {
+        Utils::ft_send(client.getSocket(), ERR_CHANNELISFULL(client.getNickname(), chan->getName()));
         return (false);
+    }
     if (vals.istherekey == true && key != vals.key)
+    {
+        Utils::ft_send(client.getSocket(), ERR_BADCHANNELKEY(client.getNickname(), chan->getName()));
         return (false);
+    }
     return (true);
 }
 
@@ -236,6 +245,122 @@ void CommandHandler::quit(Client &client, const std::vector<std::string>& args)
     server.closeClientConnection(client.getSocket());
 }
 
+void CommandHandler::mode(Client &client, const std::vector<std::string>& args)
+{
+    std::map<std::string, Channel *>::iterator it = server.getChannel(args[0]);
+    if (it == server.getChannelEnd())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), args[0]));
+        return ;
+    }
+    std::vector<std::string> newargs = args;
+    newargs.erase(newargs.begin());
+    if (!it->second->isClientInChannel(&client))
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), it->second->getName()));
+        return ;
+    }
+    if (!it->second->isClientAnOperator(&client))
+    {
+        Utils::ft_send(client.getSocket(), ERR_CHANOPRIVSNEEDED(client.getNickname(), it->second->getName()));
+        return ;
+    }
+    if (args[0] == "+o")
+    {
+        if (args.size() < 2)
+        {
+            Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE"));
+            return ;
+        }
+        if (args.size() > 2)
+        {
+            Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE: +o: too many params"));
+            return ;
+        }
+        if (!server.isClientHere(args[1]))
+        {
+            Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), args[1]));
+            return ;
+        }
+        std::map<int, Client*>::iterator it2 = server.findClient(args[1]);
+        if (!it->second->isClientInChannel(it2->second))
+        {
+            Utils::ft_send(client.getSocket(), ERR_USERNOTINCHANNEL(client.getNickname(), args[1], it->second->getName()));
+            return ;
+        }
+        it->second->addOperator(it2->second);
+        return ;
+    }
+     if (args[0] == "-o")
+    {
+        if (args.size() < 2)
+        {
+            Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE"));
+            return ;
+        }
+        if (args.size() > 2)
+        {
+            Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE: +o: too many params"));
+            return ;
+        }
+        if (!server.isClientHere(args[1]))
+        {
+            Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), args[1]));
+            return ;
+        }
+        std::map<int, Client*>::iterator it2 = server.findClient(args[1]);
+        if (!it->second->isClientInChannel(it2->second))
+        {
+            Utils::ft_send(client.getSocket(), ERR_USERNOTINCHANNEL(client.getNickname(), args[1], it->second->getName()));
+            return ;
+        }
+        if (!it->second->isClientAnOperator(it2->second))
+        {
+            Utils::ft_send(client.getSocket(), ERR_USERNOTINCHANNEL(client.getNickname(), it2->second->getNickname(), it->second->getName()));
+            return ;
+        }
+        it->second->removeOperator(it2->second);
+        return ;
+    }
+    it->second->setModes(client, newargs);
+    //Utils::ft_send(client.getSocket(), FORM_MODE(client.getNickname(), it->second->getName(), it->second->strModes()));
+    server.sendMessageOnChan(FORM_MODE(client.getNickname(), it->second->getName(), it->second->strModes()), it, client);
+}
+
+void CommandHandler::invite(Client &client, const std::vector<std::string>& args)
+{
+    if (args.size() < 2)
+    {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "INVITE"));
+        return ;
+    }
+    if (!server.isClientHere(args[0]))
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), args[0]));
+        return ;
+    }
+    std::map<std::string, Channel *>::iterator it = server.getChannel(args[1]);
+    if (it == server.getChannelEnd())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), args[0]));
+        return ;
+    }
+    if (!it->second->isClientInChannel(&client))
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), it->second->getName()));
+        return ;
+    }
+    if (!it->second->isClientAnOperator(&client) && it->second->getModes().inviteonly == true)
+    {
+        Utils::ft_send(client.getSocket(), ERR_CHANOPRIVSNEEDED(client.getNickname(), it->second->getName()));
+        return ;
+    }
+    std::map<int, Client*>::iterator it2 = server.findClient(args[0]);
+    Utils::ft_send(it2->second->getSocket(), FORM_INVITE(client.getNickname(), it2->second->getNickname(), it->second->getName()));
+    Utils::ft_send(client.getSocket(), RPL_INVITING(client.getNickname(), it->second->getName(), it2->second->getNickname()));
+    it->second->addClient(it2->second);
+}
+
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
 {
     std::string newNickname = args[0];
@@ -282,6 +407,8 @@ void CommandHandler::initializeCommands() {
     commands["PART"] = &CommandHandler::part;
     // commands["KICK"] = &CommandHandler::kick;
     commands["QUIT"] = &CommandHandler::quit;
+    commands["MODE"] = &CommandHandler::mode;
+    commands["INVITE"] = &CommandHandler::invite;
 }
 
 // void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {

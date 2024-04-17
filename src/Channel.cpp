@@ -11,14 +11,14 @@ Channel::Channel(const std::string& name, const std::string& topic) : name(name)
 	modes.istherelimit = false;
 	modes.limit = 0;
 	modes.modtopic = false;
-	setcoms["+k"] = setKey;
-	setcoms["-k"] = remKey;
-	setcoms["+t"] = setModTopic;
-	setcoms["-t"] = remModTopic;
-	setcoms["+i"] = setInvite;
-	setcoms["-i"] = remInvite;
-	setcoms["+l"] = setLimit;
-	setcoms["-l"] = remLimit;
+	setcoms["+k"] = &Channel::setKey;
+	setcoms["-k"] = &Channel::remKey;
+	setcoms["+t"] = &Channel::setModTopic;
+	setcoms["-t"] = &Channel::remModTopic;
+	setcoms["+i"] = &Channel::setInvite;
+	setcoms["-i"] = &Channel::remInvite;
+	setcoms["+l"] = &Channel::setLimit;
+	setcoms["-l"] = &Channel::remLimit;
 }
 
 void Channel::setKey(Client& client, const std::vector<std::string>& args)
@@ -44,17 +44,12 @@ void Channel::setKey(Client& client, const std::vector<std::string>& args)
 
 void Channel::remKey(Client& client, const std::vector<std::string>& args)
 {
-	if (args.size() < 2)
-	{
-		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
-		return ;
-	}
 	if (args.size() > 2)
 	{
 		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
 		return ;
 	}
-	modes.key = false;
+	modes.istherekey = false;
 	modes.key.clear();
 }
 
@@ -104,11 +99,6 @@ void Channel::setLimit(Client& client, const std::vector<std::string>& args)
 
 void Channel::remLimit(Client& client, const std::vector<std::string>& args)
 {
-	if (args.size() < 2)
-	{
-		Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "MODE: +k"));
-		return ;
-	}
 	if (args.size() > 2)
 	{
 		Utils::ft_send(client.getSocket(), ERR_UNKOWNCOMMAND(client.getNickname(), "MODE :+k :too many params"));
@@ -116,6 +106,18 @@ void Channel::remLimit(Client& client, const std::vector<std::string>& args)
 	}
 	modes.istherelimit = false;
 	modes.limit = 0;
+}
+
+void Channel::setModes(Client &client, const std::vector<std::string>& args)
+{
+	if (setcoms.count(args[0]) < 1)
+	{
+		Utils::ft_send(client.getSocket(), ERR_UNKOWNMODE(client.getNickname(), args[0], getName()));
+		return ;
+	}
+	SetFunc com = setcoms[args[0]];
+	(this->*com)(client, args);
+	Utils::ft_send(client.getSocket(), RPL_CHANNELMODEIS(client.getNickname(), getName(), strModes()));
 }
 
 std::string	Channel::getName() const
@@ -205,6 +207,29 @@ std::set<Client*> Channel::getClients() const
 t_modes Channel::getModes() const
 {
 	return (modes);
+}
+
+std::string Channel::strModes() const
+{
+	std::string smodes;
+	std::string temp;
+	if (modes.istherekey == true)
+	{
+		smodes.append("+k");
+		temp.append(modes.key);
+	}
+	if (modes.inviteonly == true)
+		smodes.append("+i");
+	if (modes.modtopic == true)
+		smodes.append("+t");
+	if (modes.istherelimit == true)
+	{
+		smodes.append("+l");
+		temp.append(std::to_string(modes.limit));
+	}
+	if (!temp.empty())
+		smodes += " " + temp;
+	return (smodes);
 }
 
 /*void Channel::sendMessageOnChan(std::string message)
