@@ -29,10 +29,11 @@
 # define FORM_QUIT(nickname, reason) ":" + nickname + "!localhost QUIT :" + reason + "\r\n"
 # define FORM_MODE(nickname, channel, modes) ":" + nickname + "!localhost MODE :" + channel + " " + modes + "\r\n"
 # define FORM_INVITE(nickname, target, channel) ":" + nickname + "!localhost INVITE " + target + " " + channel + "\r\n"
+# define FORM_TOPIC(nickname, channel, topic) ":" + nickname + "!localhost TOPIC " + channel + " :" + topic + "\r\n"
 // RPLs
 # define RPL_WELCOME(nickname)  ":localhost 001 " + nickname + " :Welcome " + nickname + " in this IRC server!\r\n"
-# define RPL_TOPIC(nickname, channel, topic) ":localhost 331 " + nickname = " :" + channel + ":" + topic + "\r\n"
-# define RPL_NOTOPIC(nickname, channel) ":localhost 331 " + nickname = " :" + channel + " :No topic is set.\r\n"
+# define RPL_TOPIC(nickname, channel, topic) ":localhost 331 " + nickname + " :" + channel + " :" + topic + "\r\n"
+# define RPL_NOTOPIC(nickname, channel) ":localhost 331 " + nickname + " :" + channel + " :No topic is set.\r\n"
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n"
 # define RPL_CHANNELMODEIS(nickname, channel, modes) ":localhost 324 " + nickname + " :" + channel + " " + modes + "\r\n"
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n" 
