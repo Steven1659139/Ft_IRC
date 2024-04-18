@@ -379,6 +379,61 @@ void CommandHandler::user(Client& client, const std::vector<std::string>& args)
     client.setUsername(newUsername);
 }
 
+void CommandHandler::topic(Client& client, const std::vector<std::string>& args)
+{
+    if (args.empty())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "TOPIC"));
+        return ;
+    }
+    if (server.getChannel(args[0]) == server.getChannelEnd())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), args[0]));
+        return ;
+    }
+    if (!server.getChannel(args[0])->second->isClientInChannel(&client))
+    {
+        Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), args[0]));
+        return ;
+    }
+    if (args.size() == 1)
+    {
+        std::cout << "test\n";   
+        if (server.getChannel(args[0])->second->getTopic().empty())
+        {
+            Utils::ft_send(client.getSocket(), RPL_NOTOPIC(client.getNickname(), args[0]));
+            return ;
+        }
+        Utils::ft_send(client.getSocket(), RPL_TOPIC(client.getNickname(), args[0], server.getChannel(args[0])->second->getTopic()));
+        return ;
+    }
+    if (args.size() > 1)
+    {
+        if (server.getChannel(args[0])->second->getModes().modtopic == true && !server.getChannel(args[0])->second->isClientAnOperator(&client))
+        {
+            Utils::ft_send(client.getSocket(), ERR_CHANOPRIVSNEEDED(client.getNickname(), args[0]));
+            return ;
+        }
+        std::string top;
+        for(size_t i = 1; i < args.size(); ++i)
+        {
+            top += args[i];
+            if (i < args.size() - 1)
+                top += " ";
+        }
+        if (top.empty())
+        {
+            server.getChannel(args[0])->second->setTopic("");
+            server.sendMessageOnChan(FORM_TOPIC(client.getNickname(), args[0], ""), server.getChannel(args[0]), client);
+            Utils::ft_send(client.getSocket(), FORM_TOPIC(client.getNickname(), args[0], ""));
+            return ;
+        }
+        server.getChannel(args[0])->second->setTopic(top);
+        server.sendMessageOnChan(FORM_TOPIC(client.getNickname(), args[0], top), server.getChannel(args[0]), client);
+        Utils::ft_send(client.getSocket(), FORM_TOPIC(client.getNickname(), args[0], top));
+        return ;
+    }
+}
 
 // Traiter une commande reçue d'un client
 void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
@@ -409,6 +464,7 @@ void CommandHandler::initializeCommands() {
     commands["QUIT"] = &CommandHandler::quit;
     commands["MODE"] = &CommandHandler::mode;
     commands["INVITE"] = &CommandHandler::invite;
+    commands["TOPIC"] = &CommandHandler::topic;
 }
 
 // void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
