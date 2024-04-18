@@ -30,6 +30,7 @@
 # define FORM_MODE(nickname, channel, modes) ":" + nickname + "!localhost MODE :" + channel + " " + modes + "\r\n"
 # define FORM_INVITE(nickname, target, channel) ":" + nickname + "!localhost INVITE " + target + " " + channel + "\r\n"
 # define FORM_TOPIC(nickname, channel, topic) ":" + nickname + "!localhost TOPIC " + channel + " :" + topic + "\r\n"
+# define FORM_KICK(nickname, channel, target, msg) ":" + nickname + "!localhost KICK " + channel + " " + target + " :" + msg + "\r\n"
 // RPLs
 # define RPL_WELCOME(nickname)  ":localhost 001 " + nickname + " :Welcome " + nickname + " in this IRC server!\r\n"
 # define RPL_TOPIC(nickname, channel, topic) ":localhost 331 " + nickname + " :" + channel + " :" + topic + "\r\n"
