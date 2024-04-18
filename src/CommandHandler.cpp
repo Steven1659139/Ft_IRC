@@ -24,13 +24,12 @@ void CommandHandler::pass(Client& client, const std::vector<std::string>& args) 
     if (providedPassword == server.getPass())
     {
         client.goodPass = true;
-        server.authenticateClient(client);
+        if (!client.isAuth())
+            server.authenticateClient(client);
         Utils::ft_send(client.getSocket(), FORM_PASS(client.getNickname(), providedPassword));
     }
     else
-    {
         Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
-    }
 }
 
 
@@ -361,15 +360,35 @@ void CommandHandler::invite(Client &client, const std::vector<std::string>& args
     it->second->addClient(it2->second);
 }
 
-void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
-{
+
+void CommandHandler::nick(Client& client, const std::vector<std::string>& args) {
+    if (args.empty()) {
+        Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
+        return;
+    }
+
     std::string newNickname = args[0];
 
-    Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
-    client.setNickname(newNickname);
-    std::cout << "Nickname mis à jour : " << newNickname << std::endl;
-    Utils::ft_send(client.getSocket(), RPL_WELCOME(client.getNickname()));
+    // Vérifier si le pseudonyme est déjà utilisé
+    if (server.isNicknameUsed(newNickname)) {
+        // Envoyer un message d'erreur si le pseudonyme est déjà pris
+        Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getNickname(), newNickname));
+    } else {
+        // Mettre à jour le pseudonyme si ce n'est pas le cas
+        client.setNickname(newNickname);
+        std::cout << "Nickname mis à jour : " << newNickname << std::endl;
+    }
 }
+
+
+// void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
+// {
+//     std::string newNickname = args[0];
+
+//     Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
+//     client.setNickname(newNickname);
+//     std::cout << "Nickname mis à jour : " << newNickname << std::endl;
+// }
 
 void CommandHandler::user(Client& client, const std::vector<std::string>& args)
 {

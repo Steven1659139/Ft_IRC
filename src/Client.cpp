@@ -1,6 +1,7 @@
 #include "../includes/Client.hpp"
 #include "../includes/Channel.hpp"
 #include "../includes/Server.hpp"
+#include "../includes/Utils.hpp"
 
 Client::Client(int socket, const std::string& nickname, const std::string& username) : socket(socket), nickname(nickname), username(username)
 {
@@ -43,14 +44,11 @@ void Client::setAuth(bool value) {
 
 bool Client::isAuth() const
 {
-    if ((goodPass) && (!nickname.empty()))
-    {
-        std::cout << "Le client est authentifié\n";
+    if (auth)
         return true;
-    }
     else
     {
-        sendMessage(ERR_NOTREGEISTERED(nickname));
+        Utils::ft_send(socket, ERR_NOTREGEISTERED(nickname));
         return false;
     }
 }
@@ -62,7 +60,7 @@ void Client::joinChannel(Channel* ch)
     if (i == 0)
         channels.insert(std::make_pair(ch->getName(), ch));
     else
-        sendMessage(ERR_USERONCHANNEL(nickname, nickname,ch->getName()));
+        Utils::ft_send(socket, ERR_USERONCHANNEL(nickname, nickname,ch->getName()));
 }
 
 void Client::leaveChannel(const std::string &channelName)
@@ -71,7 +69,7 @@ void Client::leaveChannel(const std::string &channelName)
     if (i == 1)
         channels.erase(channelName);
     else
-        sendMessage(ERR_NOTONCHANNEL(nickname, channelName));
+        Utils::ft_send(socket, ERR_NOTONCHANNEL(nickname, channelName));
 }
 
 bool Client::sendMessage(const std::string& message) const {

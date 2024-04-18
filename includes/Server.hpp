@@ -78,6 +78,7 @@ public:
     bool authenticateClient(Client &client);
     void leaveAllChans(Client &client);
     void closeClientConnection(int clientSocket);
+    bool isNicknameUsed(const std::string& nickname);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
