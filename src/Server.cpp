@@ -236,7 +236,7 @@ bool Server::authenticateClient(Client &client)
     {
         client.setAuth(true);
         Utils::ft_send(client.getSocket(), RPL_WELCOME(client.getNickname()));
-        // Utils::ft_send(client.getSocket(), RPL_LOGGEDIN(client.getNickname()));
+        Utils::ft_send(client.getSocket(), RPL_LOGGEDIN(client.getNickname()));
         return (true);
     }
     else
@@ -327,13 +327,21 @@ void Server::leaveAllChans(Client &client)
 }
 
 bool Server::isNicknameUsed(const std::string& nickname) {
-    // Parcourir tous les clients et vérifier si le pseudonyme est pris
     std::map<int, Client*>::iterator it;
     for (it = clients.begin(); it != clients.end(); ++it) {
         if (it->second->getNickname() == nickname) {
-            return true; // Le pseudonyme est trouvé et donc déjà utilisé
+            return true; 
         }
     }
-    return false; // Aucun client avec ce pseudonyme
+    return false;
 }
 
+bool Server::isUsernameUsed(const std::string& username) {
+    std::map<int, Client*>::iterator it;
+    for (it = clients.begin(); it != clients.end(); ++it) {
+        if (it->second->getNickname() == username) {
+            return true; 
+        }
+    }
+    return false;
+}

@@ -117,14 +117,13 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args) 
         
         std::string key = (i < keys.size()) ? keys[i] : "";
 
-        // Supposons que getChannel retourne un itérateur à la map des canaux
         std::map<std::string, Channel*>::iterator it = server.getChannel(channel);
         if (it == server.getChannelEnd()) {
             server.createChannel(channel, "");
             it = server.getChannel(channel);
         }
 
-        Channel* chan = it->second;  // Accéder au pointeur Channel via l'itérateur
+        Channel* chan = it->second; 
         if (chan->getClients().empty()) {
             chan->addClient(&client);
             chan->addOperator(&client);
@@ -469,16 +468,37 @@ void CommandHandler::nick(Client& client, const std::vector<std::string>& args) 
 
 void CommandHandler::user(Client& client, const std::vector<std::string>& args)
 {
+
     if (!client.goodPass)
     {
-        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
+        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getUsername()));
+        return;
+    }
+        
+
+    if (args.empty() || (args.size() == 1 && args[0] == ":")) {
+        Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getUsername()));
+        std::cout << "Erreur : Aucun username valide fourni." << std::endl;
         return;
     }
 
     std::string newUsername = args[0];
+    if (newUsername[0] == ':') {
+        newUsername.erase(0, 1);
+    }
 
-    std::cout << "Username mis à jour : " << newUsername << std::endl;
-    client.setUsername(newUsername);
+    if (newUsername.empty()) {
+        Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getUsername()));
+        return;
+    }
+
+    if (server.isUsernameUsed(newUsername)) {
+        Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getUsername(), newUsername));
+    } else {
+        client.setUsername(newUsername);
+        Utils::ft_send(client.getSocket(), FORM_NICK(client.getUsername(), newUsername));
+        std::cout << "Username mis à jour : " << newUsername << std::endl;
+    }
 }
 
 void CommandHandler::topic(Client& client, const std::vector<std::string>& args)

@@ -38,7 +38,7 @@
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n"
 # define RPL_CHANNELMODEIS(nickname, channel, modes) ":localhost 324 " + nickname + " :" + channel + " " + modes + "\r\n"
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n" 
-// # define RPL_LOGGEDIN(nickname) ":localhost 900 " + nickname + " :You are now logged in as " + nickname + "\r\n"
+# define RPL_LOGGEDIN(nickname) ":localhost 900 " + nickname + " :You are now logged in as " + nickname + "\r\n"
 
 //ERRs
 # define ERR_NEEDMOREPARAMS(nickname, command) ":localhost 461 " + nickname + " " + command + " :Not enough parameters\r\n"
@@ -84,6 +84,7 @@ public:
     void leaveAllChans(Client &client);
     void closeClientConnection(int clientSocket);
     bool isNicknameUsed(const std::string& nickname);
+    bool isUsernameUsed(const std::string& username);
 private:
     int port;                           // Port sur lequel le serveur écoute
     std::string password;               // Mot de passe requis pour la connexion
