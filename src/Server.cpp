@@ -232,10 +232,11 @@ void Server::processClientActivity(fd_set& readfds) {
 
 bool Server::authenticateClient(Client &client)
 {
-    if (client.goodPass && !client.getNickname().empty() && !client.getUsername().empty())
+    if (!client.isAuth() && (client.goodPass && !client.getNickname().empty() && !client.getUsername().empty()))
     {
         client.setAuth(true);
         Utils::ft_send(client.getSocket(), RPL_WELCOME(client.getNickname()));
+        // Utils::ft_send(client.getSocket(), RPL_LOGGEDIN(client.getNickname()));
         return (true);
     }
     else

@@ -13,24 +13,36 @@ std::vector<std::string> CommandHandler::splitCommandLine(const std::string& com
     return tokens;
 }
 
+std::vector<std::string> CommandHandler::split(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(str);
+    while (getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+
 void CommandHandler::pass(Client& client, const std::vector<std::string>& args) {
-    if (args.empty()) {
-        std::cout << "ERREUR : Aucun mot de passe fourni" << std::endl;
+    if (client.isAuth()) {
+        Utils::ft_send(client.getSocket(), ERR_ALREADYREGISTERED(client.getNickname()));
         return;
     }
 
-    std::string providedPassword = args[0];
-
-    if (providedPassword == server.getPass())
-    {
-        client.goodPass = true;
-        if (!client.isAuth())
-            server.authenticateClient(client);
-        Utils::ft_send(client.getSocket(), FORM_PASS(client.getNickname(), providedPassword));
+    if (args.empty()) {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "PASS"));
+        return;
     }
-    else
+    
+    std::string providedPassword = args[0];
+    if (providedPassword == server.getPass()) {
+        client.goodPass = true;
+    } else {
         Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
+    }
 }
+
 
 
 void CommandHandler::privMsg(Client & client, const std::vector<std::string>& args)
@@ -77,89 +89,148 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
     }
 }
 
-void CommandHandler::join(Client &client, const std::vector<std::string>& args)
-{
-    if (client.isAuth())
-    {
-        if (!args[0].compare("#0"))
-        {
-            server.leaveAllChans(client);
-            return ;
+
+
+
+void CommandHandler::join(Client &client, const std::vector<std::string>& args) {
+    if (!client.isAuth()) {
+        Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
+        return;
+    }
+
+    if (args[0] == "#0") {
+        server.leaveAllChans(client);
+        return;
+    }
+
+    std::vector<std::string> channels = split(args[0], ',');
+    std::vector<std::string> keys;
+    if (args.size() > 1) {
+        keys = split(args[1], ',');
+    }
+
+    for (size_t i = 0; i < channels.size(); i++) {
+        std::string channel = channels[i];
+        if (channel[0] != '#') {
+            channel = "#" + channel;
         }
-        std::map<std::string, Channel *>::iterator it;
-        size_t i = 0;
-        std::string checker;
-        std::string newchan;
-        std::vector<std::string> vec;
-        std::vector<std::string> keyvec;
-        std::string temp;
-        std::string temp2 = args[0];
-        while (i < 1)
-        {
-            i = temp2.find_first_of(',');
-            if (i == std::string::npos)
-            {
-                vec.push_back(temp2);
-                break ;
-            }
-            temp = temp2.substr(0, i);
-            temp2.erase(0, i + 1);
-            vec.push_back(temp);
-            i = 0;
+        
+        std::string key = (i < keys.size()) ? keys[i] : "";
+
+        // Supposons que getChannel retourne un itérateur à la map des canaux
+        std::map<std::string, Channel*>::iterator it = server.getChannel(channel);
+        if (it == server.getChannelEnd()) {
+            server.createChannel(channel, "");
+            it = server.getChannel(channel);
         }
-        i = 0;
-        if (args.size() > 1)
-        {
-            temp2 = args[1];
-            while (i < 1)
-            {
-                i = temp2.find_first_of(',');
-                if (i == std::string::npos)
-                {
-                    keyvec.push_back(temp2);
-                    break ;
-                }
-                temp = temp2.substr(0, i);
-                temp2.erase(0, i + 1);
-                keyvec.push_back(temp);
-                i = 0;
+
+        Channel* chan = it->second;  // Accéder au pointeur Channel via l'itérateur
+        if (chan->getClients().empty()) {
+            chan->addClient(&client);
+            chan->addOperator(&client);
+        } else {
+            bool canJoin = modeCheck(chan, key, client);
+            if (!canJoin) {
+                continue;
             }
+            chan->addClient(&client);
         }
-        i = 0;
-        bool canjoin;
-        while (i < vec.size())
-        {
-            if (i >= keyvec.size())
-                keyvec.push_back("");
-            checker = vec[i];
-            if (checker[0] != '#')
-                newchan += "#" + vec[i];
-            else
-                newchan = vec[i];
-            server.createChannel(newchan, "");
-            it = server.getChannel(newchan);
-            if (it->second->getClients().empty())
-            {
-                it->second->addClient(&client);
-                it->second->addOperator(&client);
-            }
-            else
-            {
-                canjoin = modeCheck(it->second, keyvec[i], client);
-                if (canjoin == false)
-                {
-                    i++;
-                    newchan.clear();
-                    continue;
-                }
-               it->second->addClient(&client); 
-            }
-            Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
-            newchan.clear();
-            i++;
-        }
+        
+        Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), channel));
     }
 }
+
+
+
+
+
+
+
+// void CommandHandler::join(Client &client, const std::vector<std::string>& args)
+// {
+//     if (!client.isAuth()) {
+//         Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
+//         return;
+//     }
+//         if (!args[0].compare("#0"))
+//         {
+//             server.leaveAllChans(client);
+//             return ;
+//         }
+
+//         std::map<std::string, Channel *>::iterator it;
+//         size_t i = 0;
+//         std::string checker;
+//         std::string newchan;
+//         std::vector<std::string> vec;
+//         std::vector<std::string> keyvec;
+//         std::string temp;
+//         std::string temp2 = args[0];
+//         while (i < 1)
+//         {
+//             i = temp2.find_first_of(',');
+//             if (i == std::string::npos)
+//             {
+//                 vec.push_back(temp2);
+//                 break ;
+//             }
+//             temp = temp2.substr(0, i);
+//             temp2.erase(0, i + 1);
+//             vec.push_back(temp);
+//             i = 0;
+//         }
+//         i = 0;
+//         if (args.size() > 1)
+//         {
+//             temp2 = args[1];
+//             while (i < 1)
+//             {
+//                 i = temp2.find_first_of(',');
+//                 if (i == std::string::npos)
+//                 {
+//                     keyvec.push_back(temp2);
+//                     break ;
+//                 }
+//                 temp = temp2.substr(0, i);
+//                 temp2.erase(0, i + 1);
+//                 keyvec.push_back(temp);
+//                 i = 0;
+//             }
+//         }
+//         i = 0;
+//         bool canjoin;
+//         while (i < vec.size())
+//         {
+//             if (i >= keyvec.size())
+//                 keyvec.push_back("");
+//             checker = vec[i];
+//             if (checker[0] != '#')
+//                 newchan += "#" + vec[i];
+//             else
+//                 newchan = vec[i];
+//             server.createChannel(newchan, "");
+//             it = server.getChannel(newchan);
+//             if (it->second->getClients().empty())
+//             {
+//                 it->second->addClient(&client);
+//                 it->second->addOperator(&client);
+//             }
+//             else
+//             {
+//                 canjoin = modeCheck(it->second, keyvec[i], client);
+//                 if (canjoin == false)
+//                 {
+//                     i++;
+//                     newchan.clear();
+//                     continue;
+//                 }
+//                it->second->addClient(&client); 
+//             }
+//             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
+//             newchan.clear();
+//             i++;
+//         }
+// }
 
 bool CommandHandler::modeCheck(Channel *chan, std::string key, Client &client)
 {
@@ -362,7 +433,14 @@ void CommandHandler::invite(Client &client, const std::vector<std::string>& args
 
 
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args) {
-    // Vérifie si aucun argument n'a été fourni ou si l'argument est uniquement ":"
+
+    if (!client.goodPass)
+    {
+        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
+        return;
+    }
+        
+
     if (args.empty() || (args.size() == 1 && args[0] == ":")) {
         Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
         std::cout << "Erreur : Aucun nickname valide fourni." << std::endl;
@@ -370,42 +448,33 @@ void CommandHandler::nick(Client& client, const std::vector<std::string>& args) 
     }
 
     std::string newNickname = args[0];
-
-    // Enlève les ":" potentiellement ajoutés par des clients comme LimeChat
     if (newNickname[0] == ':') {
-        newNickname.erase(0, 1);  // Supprime le premier caractère si c'est ':'
+        newNickname.erase(0, 1);
     }
 
-    // Vérifie si le nickname est vide après avoir enlevé ":"
     if (newNickname.empty()) {
         Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
-        std::cout << "Erreur : Aucun nickname valide fourni après suppression des caractères spéciaux." << std::endl;
         return;
     }
 
-    // Vérifie si le nickname est déjà utilisé
     if (server.isNicknameUsed(newNickname)) {
         Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getNickname(), newNickname));
-        std::cout << "Erreur : Pseudonyme déjà utilisé - " << newNickname << std::endl;
     } else {
         client.setNickname(newNickname);
+        Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
         std::cout << "Nickname mis à jour : " << newNickname << std::endl;
     }
 }
 
 
-
-// void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
-// {
-//     std::string newNickname = args[0];
-
-//     Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
-//     client.setNickname(newNickname);
-//     std::cout << "Nickname mis à jour : " << newNickname << std::endl;
-// }
-
 void CommandHandler::user(Client& client, const std::vector<std::string>& args)
 {
+    if (!client.goodPass)
+    {
+        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
+        return;
+    }
+
     std::string newUsername = args[0];
 
     std::cout << "Username mis à jour : " << newUsername << std::endl;
@@ -610,22 +679,27 @@ void CommandHandler::kick(Client& client, const std::vector<std::string>& args)
 }
 
 // Traiter une commande reçue d'un client
+
 void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
     std::vector<std::string> args = splitCommandLine(commandLine);
-    if (args.empty()) return;
+    if (args.empty()) {
+        return;
+    }
 
     std::string command = args[0];
     args.erase(args.begin());
 
+    server.authenticateClient(client);
+
     std::map<std::string, CommandFunc>::iterator it = commands.find(command);
     if (it != commands.end()) {
         CommandFunc func = it->second;
-        (this->*func)(client, args);
-    } else
-    {
-         client.sendMessage(ERR_UNKOWNCOMMAND(client.getNickname(), command));
+        (this->*func)(client, args); 
+    } else {
+        Utils::ft_send(client.getSocket() ,ERR_UNKOWNCOMMAND(client.getNickname(), command)); 
     }
 }
+
 
 void CommandHandler::initializeCommands() {
     commands["NICK"] = &CommandHandler::nick;
@@ -640,34 +714,3 @@ void CommandHandler::initializeCommands() {
     commands["INVITE"] = &CommandHandler::invite;
     commands["TOPIC"] = &CommandHandler::topic;
 }
-
-// void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
-
-//     std::vector<std::string> args = splitCommandLine(commandLine);
-
-//     if (args.empty()) return;
-//     std::string command = args[0];
-//     args.erase(args.begin());
-
-//     std::cout << command << std::endl;
-
-//     // Dispatch vers la commande appropriée
-//     if (command == "PASS") 
-//         pass(client, args);
-//     if (command == "NICK")
-//         nick(client, args);
-//     if (command == "USER")
-//         user(client, args);
-//     if (client.isAuth())
-//     {
-//         if (command == "JOIN") {
-//             join(client, args);
-//         } else if (command == "PART") {
-//             // handlePartCommand(client, args);
-//         } else if (command == "#PRIVMSG") {
-//             privMsg(client, args);
-//         } else if (command == "QUIT") {
-//             // handleQuitCommand(client, args);
-//         }
-//     }
-// }

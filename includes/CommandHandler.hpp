@@ -15,6 +15,7 @@ public:
     // Traiter une commande reçue d'un client
     void handleCommand(Client& client, const std::string& commandLine);
     void initializeCommands();
+    std::vector<std::string> split(const std::string &s, char delimiter);
 
 private:
     Server& server; // Référence au serveur pour accéder aux clients et aux canaux

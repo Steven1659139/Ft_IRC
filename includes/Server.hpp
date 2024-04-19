@@ -38,6 +38,8 @@
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n"
 # define RPL_CHANNELMODEIS(nickname, channel, modes) ":localhost 324 " + nickname + " :" + channel + " " + modes + "\r\n"
 # define RPL_INVITING(nickname, target, channel) ":localhost 341 " + nickname + " :" + channel + " " + target + "\r\n" 
+// # define RPL_LOGGEDIN(nickname) ":localhost 900 " + nickname + " :You are now logged in as " + nickname + "\r\n"
+
 //ERRs
 # define ERR_NEEDMOREPARAMS(nickname, command) ":localhost 461 " + nickname + " " + command + " :Not enough parameters\r\n"
 # define ERR_ALREADYREGISTERED(nickname) ":localhost 462 " + nickname + " : Unauthorized command (already registered)"
@@ -58,7 +60,8 @@
 # define ERR_NOSUCHNICK(nickname, channel) ":localhost 401 " + nickname + " :" + channel + " :No such nick/channel.\r\n"
 # define ERR_USERONCHANNEL(nickname, target, channel) ":localhost 443 " + nickname + " :" + target + " " + channel + " :is already on channel.\r\n"
 # define ERR_NOTEXTTOSEND(nickname) ":localhost 412 " + nickname + " :No text to send.\n\r"
-# define ERR_NOTREGEISTERED(nickname) ":localhost 451 " + nickname + " :You have not registered.\r\n"
+# define ERR_NOTREGISTERED(nickname) ":localhost 451 " + nickname + " :You have not registered.\r\n"
+
 # define ERR_PASSWDMISMATCH(nickname) ":localhost 464 " + nickname + " :Password incorrect.\r\n"
 
 

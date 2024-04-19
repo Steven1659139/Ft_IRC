@@ -48,7 +48,6 @@ bool Client::isAuth() const
         return true;
     else
     {
-        Utils::ft_send(socket, ERR_NOTREGEISTERED(nickname));
         return false;
     }
 }

@@ -64,6 +64,7 @@ public:
     //Fonction pour changer les modes, qui va appeler des fonctions privées.
     void    setModes(Client &client, const std::vector<std::string> &args);
 
+
 private:
     std::string const name; // Nom du canal
     std::string topic; // Sujet du canal
