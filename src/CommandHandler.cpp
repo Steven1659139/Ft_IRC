@@ -362,23 +362,37 @@ void CommandHandler::invite(Client &client, const std::vector<std::string>& args
 
 
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args) {
-    if (args.empty()) {
+    // Vérifie si aucun argument n'a été fourni ou si l'argument est uniquement ":"
+    if (args.empty() || (args.size() == 1 && args[0] == ":")) {
         Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
+        std::cout << "Erreur : Aucun nickname valide fourni." << std::endl;
         return;
     }
 
     std::string newNickname = args[0];
 
-    // Vérifier si le pseudonyme est déjà utilisé
+    // Enlève les ":" potentiellement ajoutés par des clients comme LimeChat
+    if (newNickname[0] == ':') {
+        newNickname.erase(0, 1);  // Supprime le premier caractère si c'est ':'
+    }
+
+    // Vérifie si le nickname est vide après avoir enlevé ":"
+    if (newNickname.empty()) {
+        Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
+        std::cout << "Erreur : Aucun nickname valide fourni après suppression des caractères spéciaux." << std::endl;
+        return;
+    }
+
+    // Vérifie si le nickname est déjà utilisé
     if (server.isNicknameUsed(newNickname)) {
-        // Envoyer un message d'erreur si le pseudonyme est déjà pris
         Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getNickname(), newNickname));
+        std::cout << "Erreur : Pseudonyme déjà utilisé - " << newNickname << std::endl;
     } else {
-        // Mettre à jour le pseudonyme si ce n'est pas le cas
         client.setNickname(newNickname);
         std::cout << "Nickname mis à jour : " << newNickname << std::endl;
     }
 }
+
 
 
 // void CommandHandler::nick(Client& client, const std::vector<std::string>& args)
