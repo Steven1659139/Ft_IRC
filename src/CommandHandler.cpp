@@ -92,144 +92,140 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
 
 
 
-void CommandHandler::join(Client &client, const std::vector<std::string>& args) {
-    if (!client.isAuth()) {
-        Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
-        return;
-    }
-
-    if (args[0] == "#0") {
-        server.leaveAllChans(client);
-        return;
-    }
-
-    std::vector<std::string> channels = split(args[0], ',');
-    std::vector<std::string> keys;
-    if (args.size() > 1) {
-        keys = split(args[1], ',');
-    }
-
-    for (size_t i = 0; i < channels.size(); i++) {
-        std::string channel = channels[i];
-        if (channel[0] != '#') {
-            channel = "#" + channel;
-        }
-        
-        std::string key = (i < keys.size()) ? keys[i] : "";
-
-        std::map<std::string, Channel*>::iterator it = server.getChannel(channel);
-        if (it == server.getChannelEnd()) {
-            server.createChannel(channel, "");
-            it = server.getChannel(channel);
-        }
-
-        Channel* chan = it->second; 
-        if (chan->getClients().empty()) {
-            chan->addClient(&client);
-            chan->addOperator(&client);
-        } else {
-            bool canJoin = modeCheck(chan, key, client);
-            if (!canJoin) {
-                continue;
-            }
-            chan->addClient(&client);
-        }
-        
-        Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), channel));
-    }
-}
-
-
-
-
-
-
-
-// void CommandHandler::join(Client &client, const std::vector<std::string>& args)
-// {
+// void CommandHandler::join(Client &client, const std::vector<std::string>& args) {
 //     if (!client.isAuth()) {
 //         Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
 //         return;
 //     }
-//         if (!args[0].compare("#0"))
-//         {
-//             server.leaveAllChans(client);
-//             return ;
+
+//     if (args[0] == "#0") {
+//         server.leaveAllChans(client);
+//         return;
+//     }
+
+//     std::vector<std::string> channels = split(args[0], ',');
+//     std::vector<std::string> keys;
+//     if (args.size() > 1) {
+//         keys = split(args[1], ',');
+//     }
+
+//     for (size_t i = 0; i < channels.size(); i++) {
+//         std::string channel = channels[i];
+//         if (channel[0] != '#') {
+//             channel = "#" + channel; 
+//         }
+        
+//         std::string key = (i < keys.size()) ? keys[i] : "";
+
+//         std::map<std::string, Channel*>::iterator it = server.getChannel(channel);
+//         if (it == server.getChannelEnd()) {
+//             server.createChannel(channel, "");
+//             it = server.getChannel(channel);
 //         }
 
-//         std::map<std::string, Channel *>::iterator it;
-//         size_t i = 0;
-//         std::string checker;
-//         std::string newchan;
-//         std::vector<std::string> vec;
-//         std::vector<std::string> keyvec;
-//         std::string temp;
-//         std::string temp2 = args[0];
-//         while (i < 1)
-//         {
-//             i = temp2.find_first_of(',');
-//             if (i == std::string::npos)
-//             {
-//                 vec.push_back(temp2);
-//                 break ;
-//             }
-//             temp = temp2.substr(0, i);
-//             temp2.erase(0, i + 1);
-//             vec.push_back(temp);
-//             i = 0;
+//         Channel* chan = it->second;
+//         bool canJoin = modeCheck(chan, key, client);
+//         if (canJoin) {
+//             client.joinChannel(chan);  
+//             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), channel)); 
+//         } else {
+//             Utils::ft_send(client.getSocket(), ERR_BADCHANNELKEY(client.getNickname(),channel));
 //         }
-//         i = 0;
-//         if (args.size() > 1)
-//         {
-//             temp2 = args[1];
-//             while (i < 1)
-//             {
-//                 i = temp2.find_first_of(',');
-//                 if (i == std::string::npos)
-//                 {
-//                     keyvec.push_back(temp2);
-//                     break ;
-//                 }
-//                 temp = temp2.substr(0, i);
-//                 temp2.erase(0, i + 1);
-//                 keyvec.push_back(temp);
-//                 i = 0;
-//             }
-//         }
-//         i = 0;
-//         bool canjoin;
-//         while (i < vec.size())
-//         {
-//             if (i >= keyvec.size())
-//                 keyvec.push_back("");
-//             checker = vec[i];
-//             if (checker[0] != '#')
-//                 newchan += "#" + vec[i];
-//             else
-//                 newchan = vec[i];
-//             server.createChannel(newchan, "");
-//             it = server.getChannel(newchan);
-//             if (it->second->getClients().empty())
-//             {
-//                 it->second->addClient(&client);
-//                 it->second->addOperator(&client);
-//             }
-//             else
-//             {
-//                 canjoin = modeCheck(it->second, keyvec[i], client);
-//                 if (canjoin == false)
-//                 {
-//                     i++;
-//                     newchan.clear();
-//                     continue;
-//                 }
-//                it->second->addClient(&client); 
-//             }
-//             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
-//             newchan.clear();
-//             i++;
-//         }
+//     }
 // }
+
+
+
+
+
+
+
+
+void CommandHandler::join(Client &client, const std::vector<std::string>& args)
+{
+    if (!client.isAuth()) {
+        Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
+        return;
+    }
+        if (!args[0].compare("#0"))
+        {
+            server.leaveAllChans(client);
+            return ;
+        }
+
+        std::map<std::string, Channel *>::iterator it;
+        size_t i = 0;
+        std::string checker;
+        std::string newchan;
+        std::vector<std::string> vec;
+        std::vector<std::string> keyvec;
+        std::string temp;
+        std::string temp2 = args[0];
+        while (i < 1)
+        {
+            i = temp2.find_first_of(',');
+            if (i == std::string::npos)
+            {
+                vec.push_back(temp2);
+                break ;
+            }
+            temp = temp2.substr(0, i);
+            temp2.erase(0, i + 1);
+            vec.push_back(temp);
+            i = 0;
+        }
+        i = 0;
+        if (args.size() > 1)
+        {
+            temp2 = args[1];
+            while (i < 1)
+            {
+                i = temp2.find_first_of(',');
+                if (i == std::string::npos)
+                {
+                    keyvec.push_back(temp2);
+                    break ;
+                }
+                temp = temp2.substr(0, i);
+                temp2.erase(0, i + 1);
+                keyvec.push_back(temp);
+                i = 0;
+            }
+        }
+        i = 0;
+        bool canjoin;
+        while (i < vec.size())
+        {
+            if (i >= keyvec.size())
+                keyvec.push_back("");
+            checker = vec[i];
+            if (checker[0] != '#')
+                newchan += "#" + vec[i];
+            else
+                newchan = vec[i];
+            server.createChannel(newchan, "");
+            it = server.getChannel(newchan);
+            if (it->second->getClients().empty())
+            {
+                it->second->addClient(&client);
+                it->second->addOperator(&client);
+            }
+            else
+            {
+                canjoin = modeCheck(it->second, keyvec[i], client);
+                if (canjoin == false)
+                {
+                    i++;
+                    newchan.clear();
+                    continue;
+                }
+               it->second->addClient(&client); 
+            }
+            Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
+            newchan.clear();
+            i++;
+        }
+}
 
 bool CommandHandler::modeCheck(Channel *chan, std::string key, Client &client)
 {
