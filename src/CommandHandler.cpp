@@ -468,6 +468,147 @@ void CommandHandler::topic(Client& client, const std::vector<std::string>& args)
     }
 }
 
+void CommandHandler::kick(Client& client, const std::vector<std::string>& args)
+{
+    if (args.size() < 3)
+    {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "KICK"));
+        return ;
+    }
+    std::vector<std::string> vec;
+    std::string temp;
+    std::string temp2 = args[0];
+    size_t i = 0;
+    while (i < 1)
+    {
+        i = temp2.find_first_of(',');
+        if (i == std::string::npos)
+        {
+            vec.push_back(temp2);
+            break ;
+        }
+        temp = temp2.substr(0, i);
+        temp2.erase(0, i + 1);
+        vec.push_back(temp);
+        i = 0;
+    }
+    i = 0;
+    while (i < vec.size())
+    {
+       if (server.getChannel(vec[i]) == server.getChannelEnd())
+        {
+            Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), vec[i]));
+            i++;
+            continue ;
+        }
+        if (!server.getChannel(vec[i])->second->isClientInChannel(&client))
+        {
+            Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), vec[i]));
+            i++;
+            continue ;
+        }
+        if (!server.getChannel(vec[i])->second->isClientAnOperator(&client))
+        {
+            Utils::ft_send(client.getSocket(), ERR_CHANOPRIVSNEEDED(client.getNickname(), vec[i]));
+            i++;
+            continue ;
+        }
+        i++;
+    }
+    i = 0;
+    temp2 = args[1];
+    std::vector<std::string> vec2;
+    while (i < 1)
+    {
+        i = temp2.find_first_of(',');
+        if (i == std::string::npos)
+        {
+            vec2.push_back(temp2);
+            break ;
+        }
+        temp = temp2.substr(0, i);
+        temp2.erase(0, i + 1);
+        vec2.push_back(temp);
+        i = 0;
+    }
+    i = 0;
+    if (vec.size() > 1 && vec.size() != vec2.size())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "KICK"));
+        return ;
+    }
+    if (vec.size() == 1)
+    {
+        while (i < vec2.size())
+        {
+            if (!server.isClientHere(vec2[i]))
+            {
+                Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), vec2[i]));
+                i++;
+                continue ;
+            }
+            if (!server.getChannel(vec[0])->second->isClientInChannel(server.findClient(vec2[i])->second))
+            {
+                Utils::ft_send(client.getSocket(), ERR_USERNOTINCHANNEL(client.getNickname(), vec2[i], vec[0]));
+                i++;
+                continue ;
+            }
+            std::cout << "test\n";
+            std::string msg;
+            if (args.size() >= 3)
+            {
+                for (size_t j = 1; j < args.size(); ++j) {
+                msg += args[j];
+                if (j < args.size() - 1) 
+                    msg += " ";
+            }
+            }
+           
+            if (msg.empty())
+                msg = client.getNickname();
+            server.getChannel(vec[0])->second->removeClient(server.findClient(vec2[i])->second);
+            Utils::ft_send(server.findClient(vec2[i])->second->getSocket(), FORM_PARTMSG(server.findClient(vec2[i])->second->getNickname(), vec[0], msg));
+            Utils::ft_send(client.getSocket(), FORM_KICK(client.getNickname(), vec[0], vec2[i], msg));
+            server.sendMessageOnChan(FORM_KICK(client.getNickname(), vec[0], vec2[i], msg), server.getChannel(vec[0]), client);
+            i++;
+        }
+    }
+    if (vec.size() > 1)
+    {
+        while (i < vec.size())
+        {
+            if (!server.isClientHere(vec2[i]))
+            {
+                Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), vec2[i]));
+                i++;
+                continue ;
+            }
+            if (!server.getChannel(vec[i])->second->isClientInChannel(server.findClient(vec2[i])->second))
+            {
+                Utils::ft_send(client.getSocket(), ERR_USERNOTINCHANNEL(client.getNickname(), vec2[i], vec[i]));
+                i++;
+                continue ;
+            }
+            std::string msg;
+            if (args.size() >= 3)
+            {
+                for (size_t j = 1; j < args.size(); ++j) {
+                msg += args[j];
+                if (j < args.size() - 1) 
+                    msg += " ";
+            }
+            }
+            if (msg.empty())
+                msg = client.getNickname();
+            server.getChannel(vec[i])->second->removeClient(server.findClient(vec2[i])->second);
+            Utils::ft_send(server.findClient(vec2[i])->second->getSocket(), FORM_PARTMSG(server.findClient(vec2[i])->second->getNickname(), vec[i], msg));
+            Utils::ft_send(client.getSocket(), FORM_KICK(client.getNickname(), vec[i], vec2[i], msg));
+            server.sendMessageOnChan(FORM_KICK(client.getNickname(), vec[i], vec2[i], msg), server.getChannel(vec[i]), client);
+            i++;
+        }
+    }
+}
+
 // Traiter une commande reçue d'un client
 void CommandHandler::handleCommand(Client& client, const std::string& commandLine) {
     std::vector<std::string> args = splitCommandLine(commandLine);
@@ -493,7 +634,7 @@ void CommandHandler::initializeCommands() {
     commands["PRIVMSG"] = &CommandHandler::privMsg;
     commands["PASS"] = &CommandHandler::pass;
     commands["PART"] = &CommandHandler::part;
-    // commands["KICK"] = &CommandHandler::kick;
+    commands["KICK"] = &CommandHandler::kick;
     commands["QUIT"] = &CommandHandler::quit;
     commands["MODE"] = &CommandHandler::mode;
     commands["INVITE"] = &CommandHandler::invite;
