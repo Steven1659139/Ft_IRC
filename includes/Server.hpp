@@ -17,6 +17,7 @@
 # include "CommandHandler.hpp"
 # include <utility>
 # include <algorithm>
+# include <csignal>
 
 
 // Formatted replies from the server to the client
@@ -126,5 +127,7 @@ private:
 
 
 };
+
+void setStopFlag(int);
 
 #endif // SERVER_HPP

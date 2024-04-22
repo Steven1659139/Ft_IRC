@@ -3,6 +3,9 @@
 #include "../includes/Server.hpp"
 #include <cstdlib>
 
+int stopflag;
+
+
 int valid_arg(char **argv)
 {
     int port = std::atoi(argv[1]);

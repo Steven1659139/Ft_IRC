@@ -1,9 +1,11 @@
 #include "../includes/Server.hpp"
 #include "../includes/Utils.hpp"
 
-Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0;}
-// Server::Server(int port, const std::string& password) : port(port), password(password), commandHandler(*this){timeout.tv_sec = 5; timeout.tv_usec = 0;}
 
+extern int stopflag;
+
+Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0; signal(SIGSTOP, SIG_IGN); signal(SIGINT, setStopFlag); stopflag = 0;}
+// Server::Server(int port, const std::string& password) : port(port), password(password), commandHandler(*this){timeout.tv_sec = 5; timeout.tv_usec = 0;}
 
 Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
@@ -17,6 +19,11 @@ Server::~Server() {
     if (serverSocket != -1) {
         close(serverSocket);
     }
+}
+
+void setStopFlag(int)
+{
+    stopflag = 1;
 }
 
 /*
@@ -110,7 +117,8 @@ void Server::setupServerSocket()
 void Server::acceptNewConnection() {
     struct sockaddr_in clientAddr;
     socklen_t clientAddrLen = sizeof(clientAddr);
-
+    if (stopflag == 1)
+        return ;
     int clientSocket = accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
     if (clientSocket < 0) {
         std::cerr << "Erreur lors de l'acceptation d'une nouvelle connexion." << std::endl;
@@ -138,7 +146,8 @@ bool Server::handleClientData(int clientSocket) {
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
     CommandHandler handle(*this);
-
+    if (stopflag == 1)
+        return false;
     ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
     
     if (bytesRead < 0) {
@@ -177,7 +186,7 @@ void Server::run() {
     setupServerSocket();
     std::cout << "Serveur en écoute sur le port " << port << std::endl;
 
-    while (true) {
+    while (stopflag == 0) {
         initializeFDSet(readfds, max_sd);
 
         if (select(max_sd + 1, &readfds, NULL, NULL, &timeout) < 0 && errno != EINTR) {
