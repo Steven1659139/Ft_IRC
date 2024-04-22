@@ -149,8 +149,12 @@ bool Server::handleClientData(int clientSocket) {
         return false; // Indique que le client est déconnecté, sans fermer ici.
     }else
     {
-        handle.handleCommand(*clients.at(clientSocket), buffer);
-        std::cout << "Message reçu: " << buffer << std::endl;
+        clients[clientSocket]->appendToBuffer(buffer);
+        if (!clients[clientSocket]->checkForEndChars())
+            return true;
+        handle.handleCommand(*clients.at(clientSocket), clients[clientSocket]->getCommandBuffer());
+        std::cout << "Message reçu: " << clients[clientSocket]->getCommandBuffer() << std::endl;
+        clients[clientSocket]->clearBuffer();
         //send(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
         return true; // Données reçues et traitées correctement.
     }

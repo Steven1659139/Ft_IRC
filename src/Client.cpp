@@ -62,6 +62,36 @@ void Client::joinChannel(Channel* ch)
         Utils::ft_send(socket, ERR_USERONCHANNEL(nickname, nickname,ch->getName()));
 }
 
+void Client::appendToBuffer(std::string message)
+{
+    commandbuffer.append(message);
+}
+
+bool    Client::checkForEndChars() const
+{
+    std::string appenderone = "\r";
+	std::string appendertwo = "\n";
+    std::string::size_type itone = commandbuffer.find_last_of(appenderone);
+	std::string::size_type itwo = commandbuffer.find_last_not_of(appendertwo);
+    if (itone == std::string::npos || itwo == std::string::npos)
+        return false;
+    if (commandbuffer.back() != '\n')
+        return false;
+    if (commandbuffer.back() == '\n' && commandbuffer[commandbuffer.length() - 2] != '\r')
+        return false;
+    return true;
+}
+
+void Client::clearBuffer()
+{
+    commandbuffer.clear();
+}
+
+std::string Client::getCommandBuffer() const
+{
+    return (commandbuffer);
+}
+
 void Client::leaveChannel(const std::string &channelName)
 {
     size_t i = channels.count(channelName);

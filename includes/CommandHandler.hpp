@@ -33,6 +33,7 @@ private:
     void invite(Client& client, const std::vector<std::string>& args);
     void topic(Client& client, const std::vector<std::string>& args);
     void kick(Client& client, const std::vector<std::string>& args);
+    void pong(Client& client, const std::vector<std::string>& args);
     bool modeCheck(Channel *chan, std::string key, Client &client);
     // void handlePartCommand(Client& client, const std::vector<std::string>& args);
     // void handleQuitCommand(Client& client, const std::vector<std::string>& args);

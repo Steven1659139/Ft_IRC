@@ -716,6 +716,11 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     }
 }
 
+ void CommandHandler::pong(Client& client, const std::vector<std::string>& args)
+ {
+    (void)client;
+    (void)args;
+ }
 
 void CommandHandler::initializeCommands() {
     commands["NICK"] = &CommandHandler::nick;
@@ -729,4 +734,5 @@ void CommandHandler::initializeCommands() {
     commands["MODE"] = &CommandHandler::mode;
     commands["INVITE"] = &CommandHandler::invite;
     commands["TOPIC"] = &CommandHandler::topic;
+    commands["PONG"] = &CommandHandler::pong;
 }
