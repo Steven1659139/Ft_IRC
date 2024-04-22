@@ -152,47 +152,14 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
             server.leaveAllChans(client);
             return ;
         }
-
         std::map<std::string, Channel *>::iterator it;
         size_t i = 0;
         std::string checker;
         std::string newchan;
-        std::vector<std::string> vec;
+        std::vector<std::string> vec = split(args[0], ',');
         std::vector<std::string> keyvec;
-        std::string temp;
-        std::string temp2 = args[0];
-        while (i < 1)
-        {
-            i = temp2.find_first_of(',');
-            if (i == std::string::npos)
-            {
-                vec.push_back(temp2);
-                break ;
-            }
-            temp = temp2.substr(0, i);
-            temp2.erase(0, i + 1);
-            vec.push_back(temp);
-            i = 0;
-        }
-        i = 0;
         if (args.size() > 1)
-        {
-            temp2 = args[1];
-            while (i < 1)
-            {
-                i = temp2.find_first_of(',');
-                if (i == std::string::npos)
-                {
-                    keyvec.push_back(temp2);
-                    break ;
-                }
-                temp = temp2.substr(0, i);
-                temp2.erase(0, i + 1);
-                keyvec.push_back(temp);
-                i = 0;
-            }
-        }
-        i = 0;
+            keyvec = split(args[1], ',');
         bool canjoin;
         while (i < vec.size())
         {
@@ -222,6 +189,7 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
                it->second->addClient(&client); 
             }
             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), newchan));
+            server.sendMessageOnChan(FORM_JOIN(client.getNickname(), newchan), it, client);
             newchan.clear();
             i++;
         }
@@ -243,6 +211,11 @@ bool CommandHandler::modeCheck(Channel *chan, std::string key, Client &client)
     if (vals.istherekey == true && key != vals.key)
     {
         Utils::ft_send(client.getSocket(), ERR_BADCHANNELKEY(client.getNickname(), chan->getName()));
+        return (false);
+    }
+    if (chan->isClientInChannel(&client))
+    {
+        Utils::ft_send(client.getSocket(), ERR_USERONCHANNEL(client.getNickname(), client.getNickname(), chan->getName()));
         return (false);
     }
     return (true);
@@ -270,6 +243,15 @@ void CommandHandler::part(Client& client, const std::vector<std::string>& args)
     i = 0;
     std::map<std::string, Channel *>::iterator it;
     std::string temp3;
+    std::string msg;
+    if (args.size() > 1)
+    {
+        for (size_t j = 1; j < args.size(); ++j) {
+                msg += args[j];
+                if (j < args.size() - 1) 
+                    msg += " ";
+            }
+    }
     while (i < vec.size())
     {
         it = server.getChannel(vec[i]);
@@ -280,6 +262,10 @@ void CommandHandler::part(Client& client, const std::vector<std::string>& args)
         else
         {
             it->second->removeClient(&client);
+            if (!msg.empty())
+                server.sendMessageOnChan(FORM_PARTMSG(client.getNickname(), it->second->getName(), msg), it, client);
+            else
+                server.sendMessageOnChan(FORM_PART(client.getNickname(), it->second->getName()), it, client);
             if (temp3.empty())
                 temp3.append(it->second->getName());
             else
@@ -287,16 +273,8 @@ void CommandHandler::part(Client& client, const std::vector<std::string>& args)
         }
         i++;
     }
-    if (args.size() > 1)
-    {
-        std::string msg;
-        for (size_t j = 1; j < args.size(); ++j) {
-                msg += args[j];
-                if (j < args.size() - 1) 
-                    msg += " ";
-            }
+    if (!msg.empty())
         Utils::ft_send(client.getSocket(), FORM_PARTMSG(client.getNickname(), temp3, msg));
-    }
     else
         Utils::ft_send(client.getSocket(), FORM_PART(client.getNickname(), temp3));
 }
