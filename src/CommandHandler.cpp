@@ -93,6 +93,13 @@ void CommandHandler::join(Client &client, const std::vector<std::string>& args)
         Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
         return;
     }
+
+    if (args.empty())
+    {
+        Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "JOIN"));
+        return ;
+
+    }
         if (!args[0].compare("#0"))
         {
             server.leaveAllChans(client);
@@ -227,8 +234,13 @@ void CommandHandler::part(Client& client, const std::vector<std::string>& args)
 
 void CommandHandler::quit(Client &client, const std::vector<std::string>& args)
 {
-    if (args.size() > 0)
-        Utils::ft_send(client.getSocket(), FORM_QUIT(client.getNickname(), args[0]));
+    std::string newargs = args[0];
+    if (newargs[0] == ':') {
+        newargs.erase(0, 1);
+    }
+
+    if (!newargs.empty())
+        Utils::ft_send(client.getSocket(), FORM_QUIT(client.getNickname(), newargs));
     else
         Utils::ft_send(client.getSocket(), FORM_QUIT(client.getNickname(), "Leaving..."));
     server.closeClientConnection(client.getSocket());
@@ -357,12 +369,6 @@ void CommandHandler::invite(Client &client, const std::vector<std::string>& args
 
 void CommandHandler::nick(Client& client, const std::vector<std::string>& args) {
 
-    if (!client.goodPass)
-    {
-        Utils::ft_send(client.getSocket(), ERR_PASSWDMISMATCH(client.getNickname()));
-        return;
-    }
-        
 
     if (args.empty() || (args.size() == 1 && args[0] == ":")) {
         Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
@@ -519,19 +525,6 @@ void CommandHandler::kick(Client& client, const std::vector<std::string>& args)
     }
     std::vector<std::string> vec2 = split(args[1], ',');
 
-    // while (i < 1)
-    // {
-    //     i = temp2.find_first_of(',');
-    //     if (i == std::string::npos)
-    //     {
-    //         vec2.push_back(temp2);
-    //         break ;
-    //     }
-    //     temp = temp2.substr(0, i);
-    //     temp2.erase(0, i + 1);
-    //     vec2.push_back(temp);
-    //     i = 0;
-    // }
     i = 0;
     if (vec.size() > 1 && vec.size() != vec2.size())
     {
@@ -621,7 +614,6 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     std::string command = args[0];
     args.erase(args.begin());
 
-    server.authenticateClient(client);
 
     std::map<std::string, CommandFunc>::iterator it = commands.find(command);
     if (it != commands.end()) {
@@ -630,6 +622,7 @@ void CommandHandler::handleCommand(Client& client, const std::string& commandLin
     } else {
         Utils::ft_send(client.getSocket() ,ERR_UNKOWNCOMMAND(client.getNickname(), command)); 
     }
+    server.authenticateClient(client);
 }
 
  void CommandHandler::pong(Client& client, const std::vector<std::string>& args)

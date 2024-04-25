@@ -28,7 +28,7 @@
 # define FORM_NICK(nickname, newnick) ":" + nickname + "!localhost NICK :" + newnick + "\r\n"
 # define FORM_USER(nickname, newuser) ":" + nickname + "!localhost USER :" + newuser + "\r\n"
 # define FORM_PASS(nickname, pass) ":" + nickname + "!localhost PASS :" + pass + "\r\n"
-# define FORM_QUIT(nickname, reason) ":" + nickname + "!localhost QUIT :" + reason + "\r\n"
+# define FORM_QUIT(nickname, reason) ":" + nickname + "!localhost ERROR :" + reason + "\r\n"
 # define FORM_MODE(nickname, channel, modes) ":" + nickname + "!localhost MODE :" + channel + " " + modes + "\r\n"
 # define FORM_INVITE(nickname, target, channel) ":" + nickname + "!localhost INVITE " + target + " " + channel + "\r\n"
 # define FORM_TOPIC(nickname, channel, topic) ":" + nickname + "!localhost TOPIC " + channel + " :" + topic + "\r\n"

@@ -156,9 +156,11 @@ bool Server::handleClientData(int clientSocket) {
         clients[clientSocket]->appendToBuffer(buffer);
         if (!clients[clientSocket]->checkForEndChars())
             return true;
-        handle.handleCommand(*clients.at(clientSocket), clients[clientSocket]->getCommandBuffer());
         std::cout << "Message reçu: " << clients[clientSocket]->getCommandBuffer() << std::endl;
-        clients[clientSocket]->clearBuffer();
+        handle.handleCommand(*clients.at(clientSocket), clients[clientSocket]->getCommandBuffer());
+        if (clients.count(clientSocket) > 0)
+            clients[clientSocket]->clearBuffer();
+        
         return true;
     }
 }
