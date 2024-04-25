@@ -333,6 +333,11 @@ void CommandHandler::invite(Client &client, const std::vector<std::string>& args
         Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), args[0]));
         return ;
     }
+    if (!it->second->isClientInChannel(server.findClient(args[0])->second))
+    {
+        Utils::ft_send(client.getSocket(), ERR_USERONCHANNEL(client.getNickname(), server.findClient(args[0])->second->getNickname(), it->second->getName()));
+        return ;
+    }
     if (!it->second->isClientInChannel(&client))
     {
         Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), it->second->getName()));
@@ -374,11 +379,15 @@ void CommandHandler::nick(Client& client, const std::vector<std::string>& args) 
         Utils::ft_send(client.getSocket(), ERR_NONICKNAMEGIVEN(client.getNickname()));
         return;
     }
+    if (client.getNickname() ==  newNickname){
+        Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getNickname(), newNickname));
+        return;
+    }
 
-    if (server.isNicknameUsed(newNickname)) {
+    client.setNickname(newNickname);
+    if (server.isNicknameUsed(newNickname, client.getSocket())) {
         Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getNickname(), newNickname));
     } else {
-        client.setNickname(newNickname);
         Utils::ft_send(client.getSocket(), FORM_NICK(client.getNickname(), newNickname));
         std::cout << "Nickname mis à jour : " << newNickname << std::endl;
     }
@@ -415,7 +424,7 @@ void CommandHandler::user(Client& client, const std::vector<std::string>& args)
         Utils::ft_send(client.getSocket(), ERR_NICKNAMEINUSE(client.getUsername(), newUsername));
     } else {
         client.setUsername(newUsername);
-        Utils::ft_send(client.getSocket(), FORM_NICK(client.getUsername(), newUsername));
+        Utils::ft_send(client.getSocket(), FORM_USER(client.getNickname(), newUsername));
         std::cout << "Username mis à jour : " << newUsername << std::endl;
     }
 }
@@ -483,62 +492,46 @@ void CommandHandler::kick(Client& client, const std::vector<std::string>& args)
         Utils::ft_send(client.getSocket(), ERR_NEEDMOREPARAMS(client.getNickname(), "KICK"));
         return ;
     }
-    std::vector<std::string> vec;
-    std::string temp;
-    std::string temp2 = args[0];
+    std::vector<std::string> vec = split(args[0], ',');
     size_t i = 0;
-    while (i < 1)
-    {
-        i = temp2.find_first_of(',');
-        if (i == std::string::npos)
-        {
-            vec.push_back(temp2);
-            break ;
-        }
-        temp = temp2.substr(0, i);
-        temp2.erase(0, i + 1);
-        vec.push_back(temp);
-        i = 0;
-    }
-    i = 0;
+
     while (i < vec.size())
     {
        if (server.getChannel(vec[i]) == server.getChannelEnd())
         {
             Utils::ft_send(client.getSocket(), ERR_NOSUCHCHANNEL(client.getNickname(), vec[i]));
             i++;
-            continue ;
+            return ;
         }
         if (!server.getChannel(vec[i])->second->isClientInChannel(&client))
         {
             Utils::ft_send(client.getSocket(), ERR_NOTONCHANNEL(client.getNickname(), vec[i]));
             i++;
-            continue ;
+            return ;
         }
         if (!server.getChannel(vec[i])->second->isClientAnOperator(&client))
         {
             Utils::ft_send(client.getSocket(), ERR_CHANOPRIVSNEEDED(client.getNickname(), vec[i]));
             i++;
-            continue ;
+            return ;
         }
         i++;
     }
-    i = 0;
-    temp2 = args[1];
-    std::vector<std::string> vec2;
-    while (i < 1)
-    {
-        i = temp2.find_first_of(',');
-        if (i == std::string::npos)
-        {
-            vec2.push_back(temp2);
-            break ;
-        }
-        temp = temp2.substr(0, i);
-        temp2.erase(0, i + 1);
-        vec2.push_back(temp);
-        i = 0;
-    }
+    std::vector<std::string> vec2 = split(args[1], ',');
+
+    // while (i < 1)
+    // {
+    //     i = temp2.find_first_of(',');
+    //     if (i == std::string::npos)
+    //     {
+    //         vec2.push_back(temp2);
+    //         break ;
+    //     }
+    //     temp = temp2.substr(0, i);
+    //     temp2.erase(0, i + 1);
+    //     vec2.push_back(temp);
+    //     i = 0;
+    // }
     i = 0;
     if (vec.size() > 1 && vec.size() != vec2.size())
     {

@@ -333,10 +333,10 @@ void Server::leaveAllChans(Client &client)
     Utils::ft_send(client.getSocket(), FORM_PART(client.getNickname(), targets));
 }
 
-bool Server::isNicknameUsed(const std::string& nickname) {
+bool Server::isNicknameUsed(const std::string& nickname, int socket) {
     std::map<int, Client*>::iterator it;
     for (it = clients.begin(); it != clients.end(); ++it) {
-        if (it->second->getNickname() == nickname) {
+        if (it->second->getNickname() == nickname && (it->first != socket)) {
             return true; 
         }
     }
@@ -346,7 +346,7 @@ bool Server::isNicknameUsed(const std::string& nickname) {
 bool Server::isUsernameUsed(const std::string& username) {
     std::map<int, Client*>::iterator it;
     for (it = clients.begin(); it != clients.end(); ++it) {
-        if (it->second->getNickname() == username) {
+        if (it->second->getUsername() == username) {
             return true; 
         }
     }
