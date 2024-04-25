@@ -231,16 +231,3 @@ std::string Channel::strModes() const
 		smodes += " " + temp;
 	return (smodes);
 }
-
-/*void Channel::sendMessageOnChan(std::string message)
-{
-	int i = 0;
-	Client *temp;
-	std::set<Client*>::iterator it = clients.begin();
-	while (it != clients.end())
-	{
-		temp = it;
-		Utils::ft_send(it->getSocket(), message);
-		it++;
-	}
-}*/

@@ -65,7 +65,6 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
                 return ;
             }
             std::string msg;
-            // J'ai modifié la boucle pour éviter les segfault si args est vide
             for (size_t i = 1; i < args.size(); ++i) {
                 msg += args[i];
                 if (i < args.size() - 1) 
@@ -81,65 +80,12 @@ void CommandHandler::privMsg(Client & client, const std::vector<std::string>& ar
             while (++i < args.size() - 1)
                 temp += args[i] + " ";
             temp.append(args[i]);
-            //temp.append(appender);
             Utils::ft_send(it->second->getSocket(), FORM_MSG(client.getNickname(), it->second->getNickname(), temp));
         }
         else
             Utils::ft_send(client.getSocket(), ERR_NOSUCHNICK(client.getNickname(), args[0]));
     }
 }
-
-
-
-
-// void CommandHandler::join(Client &client, const std::vector<std::string>& args) {
-//     if (!client.isAuth()) {
-//         Utils::ft_send(client.getSocket(), ERR_NOTREGISTERED(client.getNickname()));
-//         return;
-//     }
-
-//     if (args[0] == "#0") {
-//         server.leaveAllChans(client);
-//         return;
-//     }
-
-//     std::vector<std::string> channels = split(args[0], ',');
-//     std::vector<std::string> keys;
-//     if (args.size() > 1) {
-//         keys = split(args[1], ',');
-//     }
-
-//     for (size_t i = 0; i < channels.size(); i++) {
-//         std::string channel = channels[i];
-//         if (channel[0] != '#') {
-//             channel = "#" + channel; 
-//         }
-        
-//         std::string key = (i < keys.size()) ? keys[i] : "";
-
-//         std::map<std::string, Channel*>::iterator it = server.getChannel(channel);
-//         if (it == server.getChannelEnd()) {
-//             server.createChannel(channel, "");
-//             it = server.getChannel(channel);
-//         }
-
-//         Channel* chan = it->second;
-//         bool canJoin = modeCheck(chan, key, client);
-//         if (canJoin) {
-//             client.joinChannel(chan);  
-//             Utils::ft_send(client.getSocket(), FORM_JOIN(client.getNickname(), channel)); 
-//         } else {
-//             Utils::ft_send(client.getSocket(), ERR_BADCHANNELKEY(client.getNickname(),channel));
-//         }
-//     }
-// }
-
-
-
-
-
-
-
 
 void CommandHandler::join(Client &client, const std::vector<std::string>& args)
 {
@@ -366,7 +312,6 @@ void CommandHandler::mode(Client &client, const std::vector<std::string>& args)
         return ;
     }
     it->second->setModes(client, newargs);
-    //Utils::ft_send(client.getSocket(), FORM_MODE(client.getNickname(), it->second->getName(), it->second->strModes()));
     server.sendMessageOnChan(FORM_MODE(client.getNickname(), it->second->getName(), it->second->strModes()), it, client);
 }
 

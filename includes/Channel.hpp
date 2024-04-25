@@ -35,9 +35,6 @@ public:
     bool addOperator(Client* client);
     bool removeOperator(Client* client);
 
-    // Envoie un message à tous les clients du canal
-    // void broadcastMessage(const std::string& message, const Client* sender = nullptr);
-
     // Définit ou obtient le sujet du canal
     void setTopic(const std::string& topic);
     std::string getTopic() const;
@@ -53,9 +50,6 @@ public:
 
     // Récupère les clients du canal
     std::set<Client*> getClients() const;
-
-    // Envoie un message à tous les clients sur le cannal
-    //void sendMessageOnChan(std::string message);
 
     // Récupère les modes du channel
     t_modes getModes() const;

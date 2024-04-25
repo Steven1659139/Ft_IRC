@@ -39,8 +39,6 @@ public:
     void clearBuffer();
     void leaveChannel(const std::string& channelName);
     void recieveMessage(int chansocket, std::string const &msg); // début de la logique pour les messages?
-    // std::vector<Channel*> getChannels() const;
-
 private:
     int socket; // Descripteur de fichier pour la connexion du client
     std::string nickname; // Pseudo du client

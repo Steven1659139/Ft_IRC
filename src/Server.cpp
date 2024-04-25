@@ -5,7 +5,6 @@
 extern int stopflag;
 
 Server::Server(int port, const std::string& password) : port(port), password(password){timeout.tv_sec = 5; timeout.tv_usec = 0; signal(SIGSTOP, SIG_IGN); signal(SIGINT, setStopFlag); stopflag = 0;}
-// Server::Server(int port, const std::string& password) : port(port), password(password), commandHandler(*this){timeout.tv_sec = 5; timeout.tv_usec = 0;}
 
 Server::~Server() {
     for(std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
@@ -124,10 +123,8 @@ void Server::acceptNewConnection() {
         std::cerr << "Erreur lors de l'acceptation d'une nouvelle connexion." << std::endl;
         return;
     }
-    // Créer un nouvel objet Client et l'ajouter à la map
     Client* newClient = new Client(clientSocket, "", "");
-    clients.insert(std::make_pair(clientSocket, newClient)); // J'ai changé la façon d'assigner pour qu'elle soit plus standard avec l'utilisation d'une map;
-
+    clients.insert(std::make_pair(clientSocket, newClient));
     std::cout << "Nouvelle connexion acceptée. ClientSocket: " << clientSocket << std::endl;
 }
 
@@ -139,7 +136,6 @@ void Server::closeClientConnection(int clientSocket) {
         clients.erase(it); 
         std::cout << "Connexion avec le client sur la socket " << clientSocket << " fermée." << std::endl;
     }
-    // Pas besoin d'afficher d'erreur ici la fonction est conçue pour être idempotente.
 }
 
 bool Server::handleClientData(int clientSocket) {
@@ -149,13 +145,12 @@ bool Server::handleClientData(int clientSocket) {
     if (stopflag == 1)
         return false;
     ssize_t bytesRead = recv(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
-    
     if (bytesRead < 0) {
         std::cerr << "Erreur lors de la lecture des données du client." << std::endl;
-        return false; // Indique une erreur, sans fermer ici.
+        return false;
     } else if (bytesRead == 0) {
         std::cout << "Client déconnecté." << std::endl;
-        return false; // Indique que le client est déconnecté, sans fermer ici.
+        return false;
     }else
     {
         clients[clientSocket]->appendToBuffer(buffer);
@@ -164,8 +159,7 @@ bool Server::handleClientData(int clientSocket) {
         handle.handleCommand(*clients.at(clientSocket), clients[clientSocket]->getCommandBuffer());
         std::cout << "Message reçu: " << clients[clientSocket]->getCommandBuffer() << std::endl;
         clients[clientSocket]->clearBuffer();
-        //send(clientSocket, buffer, sizeof(buffer), MSG_DONTWAIT);
-        return true; // Données reçues et traitées correctement.
+        return true;
     }
 }
 

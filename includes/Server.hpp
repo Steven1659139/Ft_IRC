@@ -113,12 +113,6 @@ private:
     // Traiter les données reçues d'un client
     bool handleClientData(int clientSocket);
 
-    // Envoyer un message à tous les clients connectés (sauf l'expéditeur)
-    // void broadcastMessage(const std::string& message, int senderFd);
-
-    // Fermer proprement une connexion client
-    
-
     // Vérifier si le mot de passe fourni est correct
 
     void processClientActivity(fd_set& readfds);
