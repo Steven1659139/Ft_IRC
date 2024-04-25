@@ -59,13 +59,7 @@ void Server::configureSocket() {
         exit(EXIT_FAILURE);
     }
     // Met le socket en mode non bloquant
-    int flags = fcntl(serverSocket, F_GETFL, 0);
-    if (flags == -1) {
-        std::cerr << "Erreur lors de la récupération des flags du socket" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    flags |= O_NONBLOCK;
-    if (fcntl(serverSocket, F_SETFL, flags) == -1) {
+    if (fcntl(serverSocket, F_SETFL, O_NONBLOCK) == -1) {
         std::cerr << "Erreur lors de la mise du socket en mode non bloquant" << std::endl;
         exit(EXIT_FAILURE);
     }
