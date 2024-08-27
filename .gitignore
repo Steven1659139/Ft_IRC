@@ -1,0 +1,42 @@
+# Ignorer les fichiers binaires générés
+*.o
+*.obj
+*.so
+*.a
+*.out
+*.exe
+*.dll
+
+# Dossiers de build
+/build
+/bin
+/obj
+/lib
+
+# Ignorer les fichiers de configuration générés par les IDEs
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.user
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.log
+*.swp
+*.DS_Store
+
+# Ignorer les fichiers de debug
+*.dSYM/
+*.stackdump
+
+# Ignorer les fichiers de configuration système
+Thumbs.db
+.DS_Store
+
+# Ignorer les fichiers de configuration personnelle
+*.env
+*.local
+
+# Ignorer les exécutables générés
+ircserv
