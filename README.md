@@ -61,7 +61,7 @@ Pour lancer le serveur IRC, utilisez la commande suivante :
 ### Exemple
 
 ```bash
-./irc-server 6667 mypassword
+./irc-server 6667 "mypassword"
 ```
 
 Ce qui démarre le serveur sur le port 6667 avec mypassword comme mot de passe.
